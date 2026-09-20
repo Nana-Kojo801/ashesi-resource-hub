@@ -1,0 +1,58 @@
+---
+import ResourceCard from './ResourceCard.astro';
+
+export interface Props {
+  name: string;
+  slug: string;
+  color: string;
+  resources: Array<{
+    slug: string;
+    title: string;
+    description: string;
+    type: string;
+    access: string;
+    url: string;
+  }>;
+}
+const { name, slug, color, resources } = Astro.props;
+---
+
+<section class="category-section" data-reveal>
+  <div class="section-head">
+    <span class="bar" style={`background:${color}`}></span>
+    <h2 class="section-name">{name}</h2>
+    <span class="count mono">{resources.length}</span>
+    <a class="see-all mono" href={`/category/${slug}`}>See all →</a>
+  </div>
+  <div class="rows">
+    {resources.slice(0, 5).map((r) => (
+      <ResourceCard
+        slug={r.slug}
+        title={r.title}
+        description={r.description}
+        type={r.type}
+        access={r.access}
+        url={r.url}
+        category={name}
+        color={color}
+      />
+    ))}
+  </div>
+</section>
+
+<style>
+  .category-section { margin-bottom: 34px; }
+  .section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .bar { display: block; width: 16px; height: 3px; flex: 0 0 auto; }
+  .section-name {
+    font-size: 15px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.01em; margin: 0;
+  }
+  .count { font-size: 10px; color: var(--muted); }
+  .see-all {
+    margin-left: auto; font-size: 10px; color: var(--muted-2);
+    white-space: nowrap;
+  }
+  .see-all:hover { color: var(--primary); }
+  .rows { border-top: 1px solid var(--border-2); }
+</style>

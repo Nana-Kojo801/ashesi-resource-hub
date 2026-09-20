@@ -1,0 +1,13 @@
+title: "Ashesi Email / Office 365"
+type: "Portal"
+access: "Ashesi login required"
+url: "https://mail.office365.com/"
+category: "Academic & Administration"
+description: "Your official Ashesi mailbox and Microsoft 365 apps."
+aliases:
+  - "my email"
+  - "outlook"
+  - "office 365"
+  - "check mail"
+  - "webmail"
+status: active

@@ -1,0 +1,12 @@
+title: "Course Reserves"
+type: "Tool"
+access: "Ashesi login required"
+url: "https://opac.ashesi.edu.gh/"
+category: "Library & Academic Support"
+description: "Readings and materials your lecturer has set aside for a course."
+aliases:
+  - "course readings"
+  - "course reserve"
+  - "required reading"
+  - "textbook for my class"
+status: active

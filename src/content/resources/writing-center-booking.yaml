@@ -1,0 +1,13 @@
+title: "Writing Center Booking"
+type: "Booking"
+access: "Ashesi students"
+url: "https://outlook.office365.com/owa/calendar/WritingCenter@ashesi.edu.gh/bookings/"
+category: "Library & Academic Support"
+description: "Book a session on any piece of academic or professional writing."
+aliases:
+  - "writing help"
+  - "essay help"
+  - "proofread my paper"
+  - "writing center"
+  - "review my draft"
+status: active

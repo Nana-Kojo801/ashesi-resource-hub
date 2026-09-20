@@ -1,0 +1,13 @@
+title: "Course Registration & Issue Reporting"
+type: "Process"
+access: "Ashesi login required"
+url: "https://ashesi.edu.gh/academic-registry/"
+category: "Academic & Administration"
+description: "Register for courses and report anything that goes wrong during registration."
+aliases:
+  - "add a course"
+  - "drop a course"
+  - "registration problem"
+  - "unregister from a class"
+  - "course registration"
+status: active

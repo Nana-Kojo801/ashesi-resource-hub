@@ -1,0 +1,14 @@
+title: "Academic Request Form"
+type: "Form"
+access: "Ashesi login required"
+url: "https://ashesi.edu.gh/academic-registry/"
+category: "Academic & Administration"
+description: "Transcripts, letters of attestation, proof of English proficiency and letters of introduction."
+aliases:
+  - "transcript"
+  - "proof that i am a student"
+  - "attestation letter"
+  - "letter of introduction"
+  - "academic records"
+  - "proof of english proficiency"
+status: active

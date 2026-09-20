@@ -1,0 +1,12 @@
+title: "Literature Search Training"
+type: "Booking"
+access: "Ashesi students"
+url: "https://opac.ashesi.edu.gh/"
+category: "Library & Academic Support"
+description: "Book a librarian to help you find academic literature properly."
+aliases:
+  - "literature search"
+  - "how to find sources"
+  - "research help"
+  - "librarian help"
+status: active

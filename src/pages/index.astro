@@ -1,0 +1,119 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import CategorySection from '../components/CategorySection.astro';
+import SearchBox from '../components/SearchBox.svelte';
+import { CATEGORY_COLORS, sortCategories, slugifyCategory } from '../lib/categories';
+
+const all = await getCollection('resources');
+const active = all.filter((r) => r.data.status === 'active');
+
+// Contacts & Emergency have their own dedicated surfaces (the emergency page,
+// and can be found via search) — the home board mirrors the design
+// prototype's "lines" (categories), which excluded the Offices & People and
+// Emergency groups from the tab-style browse grid.
+const boardCategories = active.filter(
+  (r) => r.data.category !== 'Offices & People' && r.data.category !== 'Emergency'
+);
+
+const byCategory = new Map<string, typeof active>();
+for (const r of boardCategories) {
+  const list = byCategory.get(r.data.category) || [];
+  list.push(r);
+  byCategory.set(r.data.category, list);
+}
+
+const orderedNames = sortCategories([...byCategory.keys()]);
+
+const INTENT_CHIPS = [
+  'my hostel AC is broken',
+  'I need a transcript',
+  'someone to talk to',
+  'I want an internship',
+  'check my meal plan',
+];
+---
+
+<Base title="Ashesi Resource Hub">
+  <section class="hero wrap">
+    <h1>Every official Ashesi link, on one board.</h1>
+    <p>
+      Portals, forms, bookings, offices and phone numbers — kept in one place
+      and checked against official sources. Say what you need, even if you
+      don't know what it's called.
+    </p>
+    <div class="search-slot">
+      <SearchBox client:load />
+    </div>
+    <div class="chips">
+      {INTENT_CHIPS.map((c) => (
+        <a class="chip mono" href={`/?q=${encodeURIComponent(c)}`}>{c}</a>
+      ))}
+    </div>
+  </section>
+
+  <nav class="tabs wrap" aria-label="Browse by category">
+    {orderedNames.map((name) => (
+      <a class="tab mono" href={`/category/${slugifyCategory(name)}`}>
+        <span class="dot" style={`background:${CATEGORY_COLORS[name] || '#B3A48F'}`}></span>
+        {name}
+      </a>
+    ))}
+    <a class="tab mono" href="/category/offices-and-people">
+      <span class="dot" style="background:#B08968"></span>
+      Offices &amp; People
+    </a>
+  </nav>
+
+  <section class="wrap board">
+    {orderedNames.map((name) => (
+      <CategorySection
+        name={name}
+        slug={slugifyCategory(name)}
+        color={CATEGORY_COLORS[name] || '#6B5F58'}
+        resources={(byCategory.get(name) || []).map((r) => ({
+          slug: r.id,
+          title: r.data.title,
+          description: r.data.description,
+          type: r.data.type,
+          access: r.data.access,
+          url: r.data.url,
+        }))}
+      />
+    ))}
+  </section>
+</Base>
+
+<style>
+  .hero { padding: clamp(28px, 7vw, 74px) 0 clamp(22px, 3.4vw, 32px); animation: fade 0.25s ease; }
+  .hero h1 {
+    font-weight: 800; font-stretch: 118%; font-size: clamp(28px, 6.4vw, 62px);
+    line-height: 0.94; letter-spacing: -0.015em; text-transform: uppercase;
+    margin: 0; max-width: 16ch;
+  }
+  .hero p {
+    font-size: clamp(14.5px, 1.9vw, 17px); line-height: 1.55; color: var(--muted);
+    margin: clamp(14px, 2.6vw, 24px) 0 0; max-width: 46ch;
+  }
+  .search-slot { margin-top: 24px; max-width: 560px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .chip {
+    display: inline-block; background: none; border: 1px dashed var(--border-3);
+    color: var(--muted-2); padding: 7px 11px; font-size: 9.5px;
+  }
+  .chip:hover { border-color: var(--text); color: var(--text); }
+
+  .tabs {
+    display: flex; gap: 3px; overflow-x: auto; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border); margin-bottom: 18px;
+  }
+  .tab {
+    display: flex; align-items: center; gap: 7px; flex: 0 0 auto;
+    background: none; color: var(--muted); border: 1px solid var(--border);
+    padding: 7px 12px; font-size: 10px; white-space: nowrap;
+  }
+  .tab:hover { border-color: var(--text); color: var(--text); }
+  .tab .dot { display: block; width: 7px; height: 7px; flex: 0 0 auto; }
+
+  .board { padding-bottom: 64px; }
+</style>

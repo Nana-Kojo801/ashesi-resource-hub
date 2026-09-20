@@ -1,0 +1,13 @@
+title: "Warren Library Catalogue (OPAC)"
+type: "Search tool"
+access: "Public"
+url: "https://opac.ashesi.edu.gh/"
+category: "Library & Academic Support"
+description: "Search everything the Warren Library holds, physical and digital."
+aliases:
+  - "find a book"
+  - "search library"
+  - "opac"
+  - "library catalogue"
+  - "is this book available"
+status: active

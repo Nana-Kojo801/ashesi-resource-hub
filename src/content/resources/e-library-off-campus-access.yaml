@@ -1,0 +1,12 @@
+title: "E-Library / Off-Campus Access"
+type: "Tool"
+access: "Ashesi login required"
+url: "https://opac.ashesi.edu.gh/"
+category: "Library & Academic Support"
+description: "Reach the library's electronic resources from outside campus."
+aliases:
+  - "off-campus library access"
+  - "e-library"
+  - "read journals from home"
+  - "remote access"
+status: active

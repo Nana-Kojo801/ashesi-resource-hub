@@ -1,0 +1,11 @@
+title: "Ashesi E-Learning Platform"
+type: "Portal"
+access: "Ashesi login required"
+url: "https://elearn.ashesi.edu.gh/"
+category: "Academic & Administration"
+description: "Unified entry point linking Pre-University, Canvas and Grants."
+aliases:
+  - "elearn"
+  - "e-learning"
+  - "online learning portal"
+status: active

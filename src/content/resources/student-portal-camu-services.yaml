@@ -1,0 +1,12 @@
+title: "Student Portal / CAMU Services"
+type: "Portal"
+access: "Ashesi login required"
+url: "https://ashesi.edu.gh/academic-registry/"
+category: "Academic & Administration"
+description: "The main student portal. Most academic requests and actions live inside CAMU."
+aliases:
+  - "student portal"
+  - "camu"
+  - "my portal"
+  - "portal login"
+status: active

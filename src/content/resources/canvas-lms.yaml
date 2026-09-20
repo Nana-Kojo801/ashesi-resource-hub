@@ -1,0 +1,13 @@
+title: "Canvas LMS"
+type: "Portal"
+access: "Ashesi login required"
+url: "https://ashesi.instructure.com/login/canvas"
+category: "Academic & Administration"
+description: "Course pages, assignments, submissions and grades for the active semester."
+aliases:
+  - "canvas"
+  - "lms"
+  - "submit assignment"
+  - "course page"
+  - "my grades"
+status: active

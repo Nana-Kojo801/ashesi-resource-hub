@@ -1,0 +1,14 @@
+title: "Ashesi Hostel Management System"
+type: "Portal"
+access: "Ashesi students"
+url: "https://ahs.ashesi.edu.gh/index.html"
+category: "Housing"
+description: "Hostel portal — room selection and group formation, using your Ashesi email and Student ID."
+aliases:
+  - "hostel"
+  - "room selection"
+  - "pick my room"
+  - "housing group"
+  - "roommates"
+  - "ahs"
+status: active

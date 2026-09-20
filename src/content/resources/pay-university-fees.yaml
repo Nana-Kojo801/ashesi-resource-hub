@@ -1,0 +1,13 @@
+title: "Pay University Fees"
+type: "Payment"
+access: "External service"
+url: "https://expresspaygh.com/ashesi"
+category: "Academic & Administration"
+description: "Ashesi currently routes fee payment through ExpressPay."
+aliases:
+  - "pay fees"
+  - "school fees"
+  - "tuition payment"
+  - "expresspay"
+  - "make a payment"
+status: active

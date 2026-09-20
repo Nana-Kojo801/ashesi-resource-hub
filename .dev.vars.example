@@ -1,0 +1,32 @@
+# Convex backend environment variables. These are NOT read from a file by
+# Convex — set each one in the Convex dashboard (Settings → Environment
+# Variables) for your dev and prod deployments. This file just documents
+# what's needed and lets you keep placeholder values around locally.
+# Never commit a real .dev.vars file.
+
+# OpenAI API key used by the Telegram content-editing bot's function-calling
+# agent (convex/telegramBot.ts).
+OPENAI_API_KEY=sk-placeholder
+
+# Fine-grained GitHub Personal Access Token scoped to Contents: Read and
+# write on this repository only. Used by convex/lib/github.ts to read and
+# commit resource YAML files.
+GITHUB_TOKEN=github_pat_placeholder
+
+# Optional: override the repo the bot writes to. Defaults to
+# Nana-Kojo801/ashesi-resource-hub on the "main" branch.
+GITHUB_REPO_OWNER=Nana-Kojo801
+GITHUB_REPO_NAME=ashesi-resource-hub
+GITHUB_REPO_BRANCH=main
+
+# Telegram bot token from @BotFather.
+TELEGRAM_BOT_TOKEN=123456:placeholder-bot-token
+
+# Shared secret registered with Telegram's setWebhook call (see README).
+# convex/http.ts checks incoming X-Telegram-Bot-Api-Secret-Token against
+# this value before doing anything else.
+TELEGRAM_WEBHOOK_SECRET=choose-a-long-random-string
+
+# The single Telegram numeric user id allowed to drive the content-editing
+# bot. Every other sender is silently ignored. Get your id from @userinfobot.
+TELEGRAM_ALLOWED_USER_ID=123456789

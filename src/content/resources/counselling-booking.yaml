@@ -1,0 +1,15 @@
+title: "Counselling Booking"
+type: "Booking"
+access: "Ashesi students"
+url: "https://ashesicounseling.simplybook.me/v2/"
+category: "Support & Wellbeing"
+description: "Book a confidential counselling session."
+aliases:
+  - "counselling"
+  - "counseling"
+  - "therapy"
+  - "someone to talk to"
+  - "mental health"
+  - "anxiety"
+  - "depression"
+status: active

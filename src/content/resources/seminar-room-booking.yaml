@@ -1,0 +1,12 @@
+title: "Seminar Room Booking"
+type: "Booking"
+access: "Ashesi login required"
+url: "https://ashesi.edu.gh/library/"
+category: "Library & Academic Support"
+description: "Reserve a Warren Library seminar room for group work."
+aliases:
+  - "book a room"
+  - "study room"
+  - "group work space"
+  - "discussion room"
+status: active

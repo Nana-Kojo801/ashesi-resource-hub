@@ -1,0 +1,12 @@
+title: "WebPrint"
+type: "Tool"
+access: "Ashesi login required"
+url: "https://opac.ashesi.edu.gh/"
+category: "Library & Academic Support"
+description: "Send documents to the library printers."
+aliases:
+  - "print"
+  - "printing"
+  - "webprint"
+  - "print a document"
+status: active

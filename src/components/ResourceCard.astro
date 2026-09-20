@@ -1,0 +1,77 @@
+---
+export interface Props {
+  slug: string;
+  title: string;
+  description: string;
+  type: string;
+  access: string;
+  url: string;
+  category: string;
+  color: string;
+  aliasHit?: string | null;
+}
+const { slug, title, description, type, access, url, category, color, aliasHit = null } = Astro.props;
+
+const ACCESS_COLOR: Record<string, string> = {
+  'Public': '#276852',
+  'Ashesi login required': '#8A6015',
+  'Ashesi students': '#6B5F58',
+  'External service': '#86603D',
+  'Ashesi community': '#86603D',
+};
+const accessColor = ACCESS_COLOR[access] || '#6B5F58';
+
+let host = url.replace(/^mailto:/, '').replace(/^tel:/, '');
+if (/^https?:\/\//.test(url)) host = url.replace(/^https?:\/\//, '').split('/')[0];
+---
+
+<a class="resource-row" href={`/resource/${slug}`} data-category={category}>
+  <span class="spine" style={`background:${color}`}></span>
+  <div class="row-body">
+    <div class="row-top">
+      <h3 class="row-title">{title}</h3>
+      {aliasHit && <span class="alias-badge mono">also called "{aliasHit}"</span>}
+    </div>
+    <p class="row-desc">{description}</p>
+    <div class="row-meta mono">
+      <span>{type}</span>
+      <span class="dot">·</span>
+      <span style={`color:${accessColor}`}>{access}</span>
+      <span class="dot">·</span>
+      <span class="host">{host}</span>
+    </div>
+  </div>
+  <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M9 5l7 7-7 7"></path></svg>
+</a>
+
+<style>
+  .resource-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-left: none;
+    margin-bottom: -1px;
+    color: var(--text);
+    transition: background 0.14s ease, transform 0.14s ease;
+    position: relative;
+  }
+  .resource-row:hover {
+    background: #FFFBF0;
+    color: var(--text);
+  }
+  .spine { flex: 0 0 auto; width: 3px; }
+  .row-body { flex: 1; min-width: 0; padding: 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .row-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .row-title { font-size: 15px; font-weight: 700; margin: 0; letter-spacing: -0.005em; }
+  .alias-badge {
+    font-size: 9px; color: var(--muted); background: var(--warning-bg);
+    border: 1px solid var(--border-3); padding: 2px 6px; white-space: nowrap;
+  }
+  .row-desc { font-size: 13px; line-height: 1.5; color: var(--muted); margin: 0; }
+  .row-meta { display: flex; align-items: center; gap: 8px; font-size: 9.5px; color: var(--muted-2); flex-wrap: wrap; }
+  .row-meta .dot { color: var(--border-3); }
+  .row-meta .host { color: var(--muted); }
+  .chevron { flex: 0 0 auto; align-self: center; margin-right: 14px; color: var(--muted); }
+</style>

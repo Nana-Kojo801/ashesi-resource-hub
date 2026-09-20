@@ -1,0 +1,13 @@
+title: "Meal Plan Subscriber Portal"
+type: "Portal"
+access: "Ashesi students"
+url: "https://subscriber.mplan.ashesi.edu.gh/"
+category: "Housing"
+description: "Check your meal plan balance, daily limit and spending history."
+aliases:
+  - "meal plan"
+  - "food balance"
+  - "how much money do i have left"
+  - "dining balance"
+  - "mplan"
+status: active

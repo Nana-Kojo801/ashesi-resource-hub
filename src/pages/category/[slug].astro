@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ResourceCard from '../../components/ResourceCard.astro';
+import { categoryColor, slugifyCategory } from '../../lib/categories';
+
+export async function getStaticPaths() {
+  const all = await getCollection('resources');
+  const active = all.filter((r) => r.data.status === 'active');
+  const names = [...new Set(active.map((r) => r.data.category))];
+  return names.map((name) => ({
+    params: { slug: slugifyCategory(name) },
+    props: {
+      name,
+      resources: active.filter((r) => r.data.category === name),
+    },
+  }));
+}
+
+const { name, resources } = Astro.props;
+const color = categoryColor(name);
+---
+
+<Base title={name}>
+  <section class="wrap category-page">
+    <a class="back mono" href="/">← All categories</a>
+    <div class="head">
+      <span class="bar" style={`background:${color}`}></span>
+      <h1>{name}</h1>
+      <span class="count mono">{resources.length} resources</span>
+    </div>
+    <div class="rows">
+      {resources.map((r: any) => (
+        <ResourceCard
+          slug={r.id}
+          title={r.data.title}
+          description={r.data.description}
+          type={r.data.type}
+          access={r.data.access}
+          url={r.data.url}
+          category={name}
+          color={color}
+        />
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .category-page { padding: 28px 0 64px; }
+  .back { display: inline-block; font-size: 10px; color: var(--muted); margin-bottom: 22px; }
+  .back:hover { color: var(--text); }
+  .head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .bar { width: 20px; height: 4px; flex: 0 0 auto; }
+  .head h1 {
+    font-weight: 800; font-stretch: 116%; font-size: clamp(22px, 4vw, 34px);
+    text-transform: uppercase; letter-spacing: -0.01em; margin: 0;
+  }
+  .count { color: var(--muted); font-size: 10px; margin-left: auto; }
+  .rows { border-top: 1px solid var(--border-2); }
+</style>
