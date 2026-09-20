@@ -14,4 +14,13 @@ import svelte from '@astrojs/svelte';
 export default defineConfig({
   output: 'static',
   integrations: [svelte()],
+  // Prefetch every in-viewport link's HTML in the background (default
+  // strategy would otherwise only prefetch on hover, which doesn't help
+  // touch/mobile navigation — the main reported slowness). By the time a
+  // link is tapped, Astro's View Transitions router swaps in already-cached
+  // markup instead of paying a full network round trip on click.
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'viewport',
+  },
 });
