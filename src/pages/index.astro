@@ -85,7 +85,11 @@ const INTENT_CHIPS = [
 </Base>
 
 <style>
-  .hero { padding: clamp(28px, 7vw, 74px) 0 clamp(22px, 3.4vw, 32px); animation: fade 0.25s ease; }
+  .hero {
+    padding-top: clamp(28px, 7vw, 74px);
+    padding-bottom: clamp(22px, 3.4vw, 32px);
+    animation: fade 0.25s ease;
+  }
   .hero h1 {
     font-weight: 800; font-stretch: 118%; font-size: clamp(28px, 6.4vw, 62px);
     line-height: 0.94; letter-spacing: -0.015em; text-transform: uppercase;
