@@ -10,3 +10,5 @@ convex/_generated/
 # Generated at dev/build time by scripts/build-data.mjs from the YAML source
 # of truth (src/content/resources/*.yaml) — see package.json predev/prebuild.
 public/data/
+public/sitemap.xml
+public/robots.txt

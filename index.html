@@ -3,9 +3,40 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ashesi Resource Hub</title>
-  <meta name="description" content="Every official Ashesi link, on one board." />
-  <link rel="icon" href="data:," />
+  <title>Ashesi Resource Hub — every official Ashesi link, on one board</title>
+  <meta
+    name="description"
+    content="Find official Ashesi University portals, forms, bookings, offices and emergency numbers — searchable by name or by what you're trying to do. No login required."
+  />
+  <meta name="theme-color" content="#A93C40" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://ashesiresourcehub.netlify.app/" />
+
+  <!-- Favicon: SVG (all modern browsers), a monochrome pinned-tab icon for
+       Safari, and a manifest so Android can add it to the home screen — all
+       vector, no raster/PNG toolchain needed. -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="mask-icon" href="/mask-icon.svg" color="#A93C40" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Open Graph / Twitter: this is a private student tool, not a marketing
+       site, so no social preview image is generated — title/description are
+       enough for the rare case a link gets shared in a chat. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Ashesi Resource Hub" />
+  <meta property="og:title" content="Ashesi Resource Hub — every official Ashesi link, on one board" />
+  <meta
+    property="og:description"
+    content="Find official Ashesi University portals, forms, bookings, offices and emergency numbers — searchable by name or by what you're trying to do."
+  />
+  <meta property="og:url" content="https://ashesiresourcehub.netlify.app/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Ashesi Resource Hub" />
+  <meta
+    name="twitter:description"
+    content="Every official Ashesi University link, on one board. Searchable by name or by what you're trying to do."
+  />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <!--
@@ -33,6 +64,17 @@
       rel="stylesheet"
     />
   </noscript>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Ashesi Resource Hub",
+      "url": "https://ashesiresourcehub.netlify.app/",
+      "description": "Find official Ashesi University portals, forms, bookings, offices and emergency numbers — searchable by name or by what you're trying to do.",
+      "publisher": { "@type": "CollegeOrUniversity", "name": "Ashesi University" }
+    }
+  </script>
 </head>
 <body>
   <div id="root"></div>
