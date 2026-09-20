@@ -10,7 +10,7 @@ import svelte from '@astrojs/svelte';
 // mutations, flags, the Telegram bot) is a separate backend reached over
 // HTTP from the browser, not from Astro server code — so 'static' output
 // with the default (no) adapter is correct and keeps deployment to
-// Cloudflare Pages a plain static-site deploy.
+// Netlify (or any static host) a plain static-site deploy.
 export default defineConfig({
   output: 'static',
   integrations: [svelte()],

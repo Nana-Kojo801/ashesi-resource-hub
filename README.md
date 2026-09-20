@@ -92,7 +92,7 @@ Resources were migrated from the design prototype's data plus the official conta
 | `TELEGRAM_BOT_TOKEN` | `convex/lib/telegram.ts` — sends replies via the Bot API | Convex dashboard |
 | `TELEGRAM_WEBHOOK_SECRET` | `convex/http.ts` — verified against `X-Telegram-Bot-Api-Secret-Token` on every webhook delivery | Convex dashboard, **and** passed to Telegram when you register the webhook (below) |
 | `TELEGRAM_ALLOWED_USER_ID` | `convex/http.ts` / `convex/flagsNode.ts` — the one Telegram user id allowed to drive the bot, and who receives flag notifications | Convex dashboard |
-| `PUBLIC_CONVEX_URL` | `src/components/FlagButton.svelte` — the Convex deployment URL the browser talks to | Cloudflare Pages → Settings → Environment variables (and your local `.env`) |
+| `PUBLIC_CONVEX_URL` | `src/components/FlagButton.svelte` — the Convex deployment URL the browser talks to | Netlify → Site configuration → Environment variables (and your local `.env`) |
 
 Copy `.env.example` to `.env` for the frontend var, and use `.dev.vars.example` as a checklist for what to set in the Convex dashboard (Convex does not read a `.dev.vars` file itself — this repo's copy is documentation only).
 
@@ -102,11 +102,31 @@ Optional overrides in `convex/lib/github.ts`: `GITHUB_REPO_OWNER`, `GITHUB_REPO_
 
 ### Convex
 
+Convex login and project creation are interactive (they open a browser to convex.dev), so run these from your own machine, not a restricted CI/sandbox:
+
 ```bash
-pnpm dlx convex deploy
+pnpm dlx convex login     # one-time device login, opens your browser
+pnpm dlx convex dev       # first run: choose "create a new project", then
+                          # generates convex/_generated/* locally and leaves
+                          # a dev deployment running for local testing
+pnpm dlx convex deploy    # ships convex/ to your production deployment
 ```
 
-Set all five Convex-side environment variables (everything above except `PUBLIC_CONVEX_URL`) in the Convex dashboard for the production deployment before or right after this. Note the deployment's HTTP Actions URL (shown in the dashboard, looks like `https://your-deployment-name.convex.site`) — you'll need it below.
+Set all five Convex-side environment variables (everything in the table above except `PUBLIC_CONVEX_URL`) in the Convex dashboard for the production deployment — either through **Settings → Environment Variables** in the dashboard, or:
+
+```bash
+pnpm dlx convex env set OPENAI_API_KEY sk-...
+pnpm dlx convex env set GITHUB_TOKEN github_pat_...
+pnpm dlx convex env set TELEGRAM_BOT_TOKEN 123456:...
+pnpm dlx convex env set TELEGRAM_WEBHOOK_SECRET <the long random string from .dev.vars>
+pnpm dlx convex env set TELEGRAM_ALLOWED_USER_ID <your numeric Telegram id>
+```
+
+Note the deployment's HTTP Actions URL (shown in the dashboard, looks like `https://your-deployment-name.convex.site`) — you'll need it below. This is **different** from the `.convex.cloud` URL used for `PUBLIC_CONVEX_URL`.
+
+### Getting your Telegram numeric user ID
+
+`TELEGRAM_ALLOWED_USER_ID` is the *numeric* Telegram user id of the one person allowed to drive the bot — not a username. Easiest way: open a chat with **@userinfobot** on Telegram and send it any message; it replies with your `Id`. Use that number.
 
 ### Registering the Telegram webhook
 
@@ -123,13 +143,15 @@ curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
 
 Use the same `TELEGRAM_WEBHOOK_SECRET` value here as the one set in the Convex dashboard.
 
-### Cloudflare Pages
+### Netlify
+
+This project builds to a plain static site (`output: 'static'`, no adapter needed) — Netlify serves that directly.
 
 - **Build command:** `pnpm build`
-- **Build output directory:** `dist`
-- **Install command:** `pnpm install`
-- Connect this GitHub repository (private), branch `main`, with auto-deploy on push.
-- Set `PUBLIC_CONVEX_URL` as a Cloudflare Pages environment variable, pointing at your production Convex deployment.
+- **Publish directory:** `dist`
+- Netlify auto-detects pnpm from `pnpm-lock.yaml`; no extra install command needed.
+- Connect this GitHub repository (private — grant Netlify's GitHub App access to it specifically), branch `main`, with auto-deploy on push.
+- Set `PUBLIC_CONVEX_URL` as a Netlify environment variable (**Site configuration → Environment variables**), pointing at your production Convex deployment's `.convex.cloud` URL.
 
 ## Decisions made while building this (spec left them ambiguous)
 
@@ -141,7 +163,7 @@ Use the same `TELEGRAM_WEBHOOK_SECRET` value here as the one set in the Convex d
 6. **Svelte 4 with `@astrojs/svelte`.** Chosen for stability with the pinned Astro 4.x line used here; both islands are minimal and don't need Svelte 5 runes.
 7. **GSAP via npm**, not a CDN `<script>` tag, bundled through Vite/Astro like any other dependency — simpler to keep versioned in `package.json` and avoids an extra network request per page.
 8. **View Transitions depth.** Astro's native `<ViewTransitions />` is enabled globally in `Base.astro` for cross-page morphing (category nav, resource detail "drawer" pages); GSAP's scroll-reveal/hover script re-runs after each transition via the `astro:page-load` event, so motion still applies after a client-side navigation.
-9. **`output: 'static'`.** Verified reasoning in `astro.config.mjs`: every route, including `search-index.json.ts`, is fully knowable at build time (it just serializes the active resources collection) — there is no server-only logic anywhere in the Astro app, so a plain static build deploys cleanly to Cloudflare Pages with no adapter.
+9. **`output: 'static'`.** Verified reasoning in `astro.config.mjs`: every route, including `search-index.json.ts`, is fully knowable at build time (it just serializes the active resources collection) — there is no server-only logic anywhere in the Astro app, so a plain static build deploys cleanly to Netlify (or any static host) with no adapter.
 10. **Resource "Verified" date.** Shown on the resource detail page as a fixed `2026-09-19`, matching the inventory document's stated research/verification date, since no per-resource `last_verified_at` field was added to the schema (the spec's schema block didn't include one; adding one is a natural follow-up if per-resource verification dates need to be tracked going forward).
 
 ## Explicitly out of scope
