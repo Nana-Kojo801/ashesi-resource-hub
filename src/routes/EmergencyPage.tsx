@@ -56,6 +56,10 @@ export function EmergencyPage() {
         </div>
       </div>
 
+      <section className="wrap back-link" style={{ paddingTop: 24, paddingBottom: 0 }}>
+        <button className="mono" onClick={() => navigate(-1)}>← Back to the resource board</button>
+      </section>
+
       <section className="wrap emergency-list">
         {EMERGENCY.map((e) => (
           <a className="emergency-row" href={tel(e.number)} key={e.tag}>
@@ -86,9 +90,6 @@ export function EmergencyPage() {
         </a>
       </section>
 
-      <section className="wrap back-link">
-        <button className="mono" onClick={() => navigate(-1)}>← Back to the resource board</button>
-      </section>
     </Layout>
   );
 }

@@ -27,10 +27,11 @@
 }
 .tab {
   display: flex; align-items: center; gap: 7px; flex: 0 0 auto;
-  background: none; color: var(--muted); border: 1px solid var(--border);
+  background: var(--card); color: var(--muted-2); border: 1px solid var(--border);
   padding: 8px 14px; font-size: 12px; white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.tab:hover { border-color: var(--text); color: var(--text); }
+.tab:hover { background: var(--border-2); border-color: var(--border-3); color: var(--text); }
 .tab .dot { display: block; width: 7px; height: 7px; flex: 0 0 auto; }
 
 .board { padding-bottom: 64px; }
@@ -60,7 +61,7 @@
 .row-desc { font-size: 14px; line-height: 1.5; color: var(--muted); margin: 0; }
 .row-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted-2); flex-wrap: wrap; }
 .row-meta .dot { color: var(--border-3); }
-.row-meta .host { color: var(--muted); }
+.row-meta .host { color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chevron { flex: 0 0 auto; align-self: center; margin-right: 14px; color: var(--muted); }
 .skeleton-row .row-body { justify-content: center; }
 
@@ -80,11 +81,12 @@
 /* ---------- Category listing page ---------- */
 .category-page { padding-top: 28px; padding-bottom: 64px; }
 .back {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 13px; color: var(--muted); margin-bottom: 22px;
-  background: none; border: none; cursor: pointer; padding: 0;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--muted-2); margin-bottom: 22px;
+  background: var(--card); border: 1px solid var(--border-3); cursor: pointer;
+  padding: 8px 14px; font-family: inherit; transition: background 0.12s, color 0.12s;
 }
-.back:hover { color: var(--text); }
+.back:hover { background: var(--border-2); color: var(--text); }
 .back:hover { color: var(--text); }
 .head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
 .head h1 {
@@ -159,11 +161,37 @@
 .emergency-row .tag { font-size: 12px; color: var(--muted); }
 .emergency-row .who { font-size: 14.5px; font-weight: 700; }
 .emergency-row .number { flex: 0 0 auto; font-size: 13px; color: var(--muted-2); white-space: nowrap; }
+@media (max-width: 520px) {
+  .emergency-row { align-items: flex-start; flex-wrap: wrap; }
+  .emergency-row .number { flex: 0 0 100%; padding-left: 56px; color: var(--primary); font-weight: 600; }
+}
 
 .back-link { padding-top: 24px; padding-bottom: 56px; }
-.back-link button { font-size: 13px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 0; font-family: inherit; }
-.back-link button:hover { color: var(--text); }
+.back-link button {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--muted-2);
+  background: var(--card); border: 1px solid var(--border-3); cursor: pointer;
+  padding: 8px 14px; font-family: inherit; transition: background 0.12s, color 0.12s;
+}
+.back-link button:hover { background: var(--border-2); color: var(--text); }
 .back-link a:hover { color: var(--text); }
+
+/* ---------- Contacts page ---------- */
+.contact-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 16px 14px; border-bottom: 1px solid var(--border-2);
+  background: var(--card); color: var(--text);
+  transition: background 0.14s;
+}
+.contact-row:hover { background: #FFFBF0; color: var(--text); }
+.contact-icon {
+  flex: 0 0 auto; width: 36px; height: 36px; display: grid; place-items: center;
+  background: var(--warning-bg); color: var(--primary); margin-top: 2px;
+}
+.contact-body { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.contact-name { font-size: 15px; font-weight: 700; }
+.contact-desc { font-size: 13px; color: var(--muted); line-height: 1.45; }
+.contact-link { font-size: 12px; color: var(--primary); word-break: break-all; }
 
 /* ---------- SearchBox ---------- */
 .searchbox { position: relative; width: 100%; }

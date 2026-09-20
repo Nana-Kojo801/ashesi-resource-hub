@@ -9,14 +9,6 @@ import { CATEGORY_COLORS, sortCategories, slugifyCategory } from '../lib/categor
 import { runMotion } from '../lib/motion';
 import type { Resource } from '../lib/types';
 
-const INTENT_CHIPS = [
-  'my hostel AC is broken',
-  'I need a transcript',
-  'someone to talk to',
-  'I want an internship',
-  'check my meal plan',
-];
-
 export function Home() {
   const { resources, loading } = useResources();
 
@@ -51,11 +43,6 @@ export function Home() {
         </p>
         <div className="search-slot">
           <SearchBox />
-        </div>
-        <div className="chips">
-          {INTENT_CHIPS.map((c) => (
-            <Link className="chip mono" to={`/?q=${encodeURIComponent(c)}`} key={c}>{c}</Link>
-          ))}
         </div>
       </section>
 

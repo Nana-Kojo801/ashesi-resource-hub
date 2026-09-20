@@ -62,7 +62,7 @@ export function ResourcePage() {
     );
   }
 
-  const { title, description, type, access, url, category, aliases } = resource;
+  const { title, description, type, access, url, category } = resource;
   const color = categoryColor(category);
 
   let host = url.replace(/^mailto:/, '').replace(/^tel:/, '');
@@ -80,17 +80,6 @@ export function ResourcePage() {
             <span className="cat-label mono" style={{ color }}>{category}</span>
             <h1>{title}</h1>
             <p className="desc">{description}</p>
-
-            {aliases && aliases.length > 0 && (
-              <div className="aliases">
-                <p className="aliases-label mono">Students also call it</p>
-                <div className="alias-chips">
-                  {aliases.map((a) => (
-                    <span className="alias-chip mono" key={a}>{a}</span>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <dl className="kv">
               <div className="kv-row">
