@@ -44,15 +44,19 @@
   async function submit() {
     if (!reason) return;
     step = 'sending';
+    if (!client) {
+      // No PUBLIC_CONVEX_URL configured yet — don't claim success for a report
+      // that was never sent anywhere.
+      step = 'error';
+      return;
+    }
     try {
-      if (client) {
-        // convex/flags.ts exposes a "create" mutation on the reports table.
-        await client.mutation('flags:create', {
-          resourceSlug,
-          reason,
-          note: note || undefined,
-        });
-      }
+      // convex/flags.ts exposes a "create" mutation on the reports table.
+      await client.mutation('flags:create', {
+        resourceSlug,
+        reason,
+        note: note || undefined,
+      });
       step = 'done';
     } catch (e) {
       step = 'error';
