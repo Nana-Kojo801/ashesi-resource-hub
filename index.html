@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ashesi Resource Hub</title>
+  <meta name="description" content="Every official Ashesi link, on one board." />
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!--
+    Google Fonts as a plain <link rel="stylesheet"> blocks first paint on the
+    fonts.googleapis.com round trip (then fonts.gstatic.com for the actual
+    files). Loading it non-blocking with the classic media="print" -> "all"
+    swap lets the page paint immediately with the fallback font, then swap in
+    Archivo/Martian Mono once loaded — same fix as the Astro site's, ported
+    here so this SPA isn't unfairly slower for an unrelated reason.
+  -->
+  <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400;500;600&display=swap"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
+  />
+  <noscript>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Martian+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </noscript>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

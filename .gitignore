@@ -6,3 +6,7 @@ dist/
 .DS_Store
 npm-debug.log*
 convex/_generated/
+.claude/
+# Generated at dev/build time by scripts/build-data.mjs from the YAML source
+# of truth (src/content/resources/*.yaml) — see package.json predev/prebuild.
+public/data/
