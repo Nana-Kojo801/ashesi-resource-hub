@@ -1,0 +1,103 @@
+:root {
+  --bg: #F6EFE0;
+  --card: #FFFDF7;
+  --input-bg: #FFFBF2;
+  --text: #1C1614;
+  --muted: #6B5F58;
+  --muted-2: #4A403B;
+  --border: #E4D9C7;
+  --border-2: #ECE1CE;
+  --border-3: #D9CBB5;
+  --primary: #A93C40;
+  --primary-hover: #8E2F33;
+  --primary-hover-2: #7E2A2E;
+  --success: #2F7A63;
+  --success-2: #276852;
+  --warning: #D97A2B;
+  --warning-2: #96501C;
+  --warning-3: #5B4023;
+  --warning-bg: #FBEEDD;
+}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Archivo, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-wrap: pretty;
+}
+/* Hide scrollbars everywhere (per the design system) while keeping scroll
+   functional — matches the Astro site's *{scrollbar-width:none}. */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
+button, input, textarea { font: inherit; color: inherit; outline: none; }
+a { color: var(--primary); text-underline-offset: 3px; text-decoration: none; }
+a:hover { color: var(--primary-hover-2); }
+::placeholder { color: var(--muted); }
+::selection { background: var(--primary); color: #fff; }
+
+.mono {
+  font-family: 'Martian Mono', monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@keyframes slidein { from { transform: translateX(3%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { 0% { opacity: 0.55; } 50% { opacity: 1; } 100% { opacity: 0.55; } }
+
+.page { min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(12px, 3vw, 26px); }
+
+.stripe { display: flex; height: 5px; flex: 0 0 auto; }
+.stripe span { flex: 1; }
+
+.site-header {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner {
+  display: flex; align-items: center; gap: clamp(6px, 1.6vw, 16px);
+  min-height: 58px; flex-wrap: wrap; padding-top: 6px; padding-bottom: 6px;
+}
+.logo { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.logo-mark {
+  width: 26px; height: 26px; background: var(--primary);
+  display: grid; place-items: center; flex: 0 0 auto;
+}
+.wordmark {
+  font-weight: 800; font-stretch: 112%; letter-spacing: 0.02em;
+  font-size: 14px; text-transform: uppercase; white-space: nowrap; color: var(--text);
+}
+.spacer { flex: 1; }
+.sos-btn {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 7px;
+  background: var(--primary); color: #fff; border: none; padding: 9px 13px;
+  cursor: pointer; font-family: 'Martian Mono', monospace; font-size: 10px;
+  font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background 0.14s ease;
+}
+.sos-btn:hover { background: var(--primary-hover); color: #fff; }
+
+.site-main { flex: 1; }
+
+.site-footer { border-top: 1px solid var(--border); padding: 24px 0 40px; }
+.site-footer p {
+  font-family: 'Martian Mono', monospace; font-size: 10px; line-height: 1.7;
+  color: var(--muted); max-width: 60ch; margin: 0;
+}
+
+.dashed {
+  border: 1px dashed var(--border-3);
+}
+
+/* Shared skeleton primitive — a shimmering block matching the muted/border
+   tokens (not a generic gray), composed into page-specific shapes. */
+.skeleton {
+  background: var(--border-2);
+  border: 1px solid var(--border);
+  animation: shimmer 1.3s ease-in-out infinite;
+}

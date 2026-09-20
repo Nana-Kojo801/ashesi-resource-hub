@@ -1,24 +1,41 @@
-# Ashesi Resource Hub
+# Ashesi Resource Hub — experimental full-client SPA variant
 
-A single, durable directory of official Ashesi University student resources — portals, forms, bookings, offices and emergency numbers — searchable by name or by what a student is trying to do (e.g. "my hostel AC is broken"). No login, no student accounts, ever. See `docs` context in the repo's design references for the full product description.
+A single, durable directory of official Ashesi University student resources — portals, forms, bookings, offices and emergency numbers — searchable by name or by what a student is trying to do (e.g. "my hostel AC is broken"). No login, no student accounts, ever.
 
-## Tech stack
+**This branch (`experiment/full-client-spa`) is an A/B experiment.** It replaces the static/prerendered Astro site on `main` with a fully client-rendered Vite + React SPA — same design system, same copy, same content, same Convex backend — so the owner can compare navigation speed and UX side by side. See [What's different from `main`](#whats-different-from-main) below for how to switch between the two and what to look at. Nothing here is meant to replace `main`; it's a comparison branch.
 
-- **Astro** (static output) for every page — the resource board, category pages, resource detail pages, the emergency page and the build-time search index.
-- **Svelte islands**, used for exactly two components: `SearchBox.svelte` and `FlagButton.svelte`.
-- **Astro Content Collections** — one YAML file per resource in `src/content/resources/`, validated by the Zod schema in `src/content/config.ts`.
-- **Fuse.js** for client-side fuzzy search against a build-time JSON index (`src/pages/search-index.json.ts`).
-- **GSAP** for scroll-reveal and hover motion (`src/scripts/motion.ts`); **Astro View Transitions** for category navigation.
-- **Convex**, scoped *only* to the `reports` (flags) table and the Telegram content-editing bot's HTTP actions. It never stores resource content.
-- **Telegram bot** (via Convex HTTP actions + OpenAI function calling) as the sole way to add, edit or archive resources, writing directly to this repo through the GitHub Contents API.
+## Tech stack (this branch)
+
+- **Vite + React + TypeScript**, fully client-rendered: one `index.html` + one JS bundle, no server-rendered or prerendered HTML for content pages. The browser downloads the app shell, then JS renders everything, including first paint of real content.
+- **React Router** (`createBrowserRouter`) for client-side routing — no page reloads between routes.
+- **A generated JSON data file**, not build-time content collections: `scripts/build-data.mjs` reads every YAML file in `src/content/resources/` (unchanged — still the single source of truth), filters to `status: active`, and writes `public/data/resources.json`, which the SPA `fetch()`s at runtime. Wired into `pnpm dev`/`pnpm build` via `predev`/`prebuild`.
+- **Skeleton loading states** everywhere content loads client-side: the category board, category pages, resource detail pages and the search box all show shimmering placeholder shapes (via a shared `<Skeleton />` primitive in `src/components/Skeleton.tsx`) while `resources.json` (or the Fuse index) is loading, instead of blank space.
+- **Fuse.js** for client-side fuzzy search, same weighting as `main` (aliases 0.5, title 0.3, description 0.2, threshold 0.35), now fetched and indexed at runtime in `SearchBox.tsx`.
+- **GSAP** for the same scroll-reveal and hover motion (`src/lib/motion.ts`), re-run from a `useEffect` on route change / data-loaded instead of Astro's `astro:page-load` event.
+- **Convex**, unchanged — scoped *only* to the `reports` (flags) table and the Telegram content-editing bot's HTTP actions. It never stores resource content. The env var is renamed `PUBLIC_CONVEX_URL` → `VITE_CONVEX_URL` because Vite (unlike Astro) only exposes `VITE_`-prefixed vars to client code; same value, same Convex deployment.
+- **Telegram bot** (via Convex HTTP actions + OpenAI function calling), unchanged, as the sole way to add, edit or archive resources, writing directly to this repo through the GitHub Contents API.
 
 **Package manager: pnpm, exclusively.** Never run `npm` or `yarn` in this repo.
+
+## What's different from `main`
+
+| | `main` (Astro) | `experiment/full-client-spa` (this branch) |
+|---|---|---|
+| Rendering | Static output, every page prerendered at build time | Fully client-rendered SPA — one shell, JS renders everything |
+| Routing | Astro pages + View Transitions | React Router, `createBrowserRouter` |
+| Resource data | Astro Content Collections, baked into HTML at build time | `public/data/resources.json`, generated from the same YAML at build time but fetched by the browser at runtime |
+| Loading states | None needed (content is already in the HTML) | Skeleton loaders on every view while data is loading |
+| Interactive islands | Svelte (`SearchBox.svelte`, `FlagButton.svelte`) | React (`SearchBox.tsx`, `FlagButton.tsx`) |
+| Convex URL env var | `PUBLIC_CONVEX_URL` | `VITE_CONVEX_URL` |
+| Convex backend (`convex/`) | Unchanged | Unchanged — byte-for-byte the same |
+
+To compare them yourself: `git checkout main` and `git checkout experiment/full-client-spa`, run `pnpm install && pnpm dev` on each, and watch first paint / navigation timing in the browser's Network and Performance panels. Both branches point at the same Convex deployment if you set the right env var on each.
 
 ## Local development
 
 ```bash
 pnpm install
-pnpm dev              # Astro dev server (the site itself)
+pnpm dev              # generates public/data/resources.json, then starts Vite
 pnpm dlx convex dev    # in a second terminal — runs the Convex backend locally
                        # and generates convex/_generated/* (not committed)
 ```
@@ -26,31 +43,40 @@ pnpm dlx convex dev    # in a second terminal — runs the Convex backend locall
 `pnpm dev` alone is enough to browse, search and read resources. You only need `convex dev` running if you're testing the flag flow or the Telegram bot locally.
 
 ```bash
-pnpm build             # static build to dist/
+pnpm build             # regenerates public/data/resources.json, then `vite build` to dist/
 pnpm preview           # preview the static build
 ```
+
+`dist/` is plain static assets (HTML shell + JS/CSS bundles + `data/resources.json`) — it still deploys to Netlify as a static site, just with client-side rendering instead of prerendering.
 
 ## Project structure
 
 ```
 src/
   content/
-    config.ts             # Zod schema for the resources collection
-    resources/*.yaml       # one file per resource — the entire content database
+    resources/*.yaml       # one file per resource — the entire content database (unchanged)
   components/
-    SearchBox.svelte       # island: live fuzzy search
-    FlagButton.svelte      # island: anonymous "flag a problem" flow
-    ResourceCard.astro
-    CategorySection.astro
-  pages/
-    index.astro            # category browse board + search + intent chips
-    category/[slug].astro
-    resource/[slug].astro  # resource detail "drawer" page
-    emergency.astro
-    search-index.json.ts   # build-time-only JSON endpoint for Fuse.js
-  layouts/Base.astro
-  lib/categories.ts         # category display order + accent colors
-  scripts/motion.ts          # GSAP scroll-reveal / hover
+    SearchBox.tsx           # live fuzzy search (Fuse.js), with a skeleton state before its index loads
+    FlagButton.tsx           # anonymous "flag a problem" flow (Convex mutation)
+    ResourceCard.tsx
+    CategorySection.tsx
+    Skeleton.tsx              # shared skeleton primitive + composed shapes
+    Layout.tsx                 # header/logo/SOS button/footer, ported from Base.astro
+  routes/
+    Home.tsx                # category browse board + search + intent chips
+    CategoryPage.tsx
+    ResourcePage.tsx          # resource detail "drawer" page
+    EmergencyPage.tsx
+  lib/
+    categories.ts             # category display order + accent colors (framework-agnostic, ported as-is)
+    motion.ts                  # GSAP scroll-reveal / hover, re-run on route change
+    useResources.ts             # fetches public/data/resources.json once, shared across components
+    types.ts
+  styles/
+    global.css                # design tokens, layout shell, skeleton shimmer
+    components.css             # per-view styles ported from each .astro/.svelte file's <style>
+scripts/
+  build-data.mjs             # YAML -> public/data/resources.json, run via predev/prebuild
 convex/
   schema.ts                # reports table only
   flags.ts                 # create (mutation), listOpen (internal query), resolve (internal mutation)
@@ -92,7 +118,7 @@ Resources were migrated from the design prototype's data plus the official conta
 | `TELEGRAM_BOT_TOKEN` | `convex/lib/telegram.ts` — sends replies via the Bot API | Convex dashboard |
 | `TELEGRAM_WEBHOOK_SECRET` | `convex/http.ts` — verified against `X-Telegram-Bot-Api-Secret-Token` on every webhook delivery | Convex dashboard, **and** passed to Telegram when you register the webhook (below) |
 | `TELEGRAM_ALLOWED_USER_ID` | `convex/http.ts` / `convex/flagsNode.ts` — the one Telegram user id allowed to drive the bot, and who receives flag notifications | Convex dashboard |
-| `PUBLIC_CONVEX_URL` | `src/components/FlagButton.svelte` — the Convex deployment URL the browser talks to | Netlify → Site configuration → Environment variables (and your local `.env`) |
+| `VITE_CONVEX_URL` | `src/components/FlagButton.tsx` — the Convex deployment URL the browser talks to (renamed from `main`'s `PUBLIC_CONVEX_URL`; Vite only exposes `VITE_`-prefixed vars to client code) | Netlify → Site configuration → Environment variables (and your local `.env`) |
 
 Copy `.env.example` to `.env` for the frontend var, and use `.dev.vars.example` as a checklist for what to set in the Convex dashboard (Convex does not read a `.dev.vars` file itself — this repo's copy is documentation only).
 
@@ -112,7 +138,7 @@ pnpm dlx convex dev       # first run: choose "create a new project", then
 pnpm dlx convex deploy    # ships convex/ to your production deployment
 ```
 
-Set all five Convex-side environment variables (everything in the table above except `PUBLIC_CONVEX_URL`) in the Convex dashboard for the production deployment — either through **Settings → Environment Variables** in the dashboard, or:
+Set all five Convex-side environment variables (everything in the table above except `VITE_CONVEX_URL`) in the Convex dashboard for the production deployment — either through **Settings → Environment Variables** in the dashboard, or:
 
 ```bash
 pnpm dlx convex env set OPENAI_API_KEY sk-...
@@ -122,7 +148,7 @@ pnpm dlx convex env set TELEGRAM_WEBHOOK_SECRET <the long random string from .de
 pnpm dlx convex env set TELEGRAM_ALLOWED_USER_ID <your numeric Telegram id>
 ```
 
-Note the deployment's HTTP Actions URL (shown in the dashboard, looks like `https://your-deployment-name.convex.site`) — you'll need it below. This is **different** from the `.convex.cloud` URL used for `PUBLIC_CONVEX_URL`.
+Note the deployment's HTTP Actions URL (shown in the dashboard, looks like `https://your-deployment-name.convex.site`) — you'll need it below. This is **different** from the `.convex.cloud` URL used for `VITE_CONVEX_URL`.
 
 ### Getting your Telegram numeric user ID
 
@@ -145,15 +171,19 @@ Use the same `TELEGRAM_WEBHOOK_SECRET` value here as the one set in the Convex d
 
 ### Netlify
 
-This project builds to a plain static site (`output: 'static'`, no adapter needed) — Netlify serves that directly.
+This project builds to a plain static site (a Vite SPA bundle — HTML shell + JS/CSS + generated `data/resources.json`, no server needed) — Netlify serves that directly.
 
 - **Build command:** `pnpm build`
 - **Publish directory:** `dist`
 - Netlify auto-detects pnpm from `pnpm-lock.yaml`; no extra install command needed.
-- Connect this GitHub repository (private — grant Netlify's GitHub App access to it specifically), branch `main`, with auto-deploy on push.
-- Set `PUBLIC_CONVEX_URL` as a Netlify environment variable (**Site configuration → Environment variables**), pointing at your production Convex deployment's `.convex.cloud` URL.
+- For this branch specifically, connect the repo and point Netlify's branch deploy at `experiment/full-client-spa` (not `main`) if you want a separate URL to compare against the `main` deploy side by side.
+- Set `VITE_CONVEX_URL` as a Netlify environment variable (**Site configuration → Environment variables**), pointing at your production Convex deployment's `.convex.cloud` URL.
+
+> A single-page app needs an SPA fallback so deep links like `/resource/some-slug` don't 404 on a hard refresh — `public/_redirects` (`/* /index.html 200`) handles that; it's copied into `dist/` on every build.
 
 ## Decisions made while building this (spec left them ambiguous)
+
+*(The numbered list below documents decisions from `main`'s original Astro build; items 6–9 specifically describe Astro/Svelte-era choices that no longer apply on this branch — see [What's different from `main`](#whats-different-from-main) for this branch's equivalents. Kept here for history.)*
 
 1. **Contacts and emergency numbers as resources, not a separate collection.** Both are modeled as ordinary entries in the same `resources` collection, with `type: "Contact"` and `category: "Offices & People"` (the official contact directory) or `category: "Emergency"` (the four campus-safety numbers plus the Academic Affairs Hotline). This keeps one schema, one search index, and one Zod validator, and the home page's category board simply excludes those two categories from its tab row (they're one click away, and Emergency also gets its own dedicated `/emergency` page per the design).
 2. **Faculty were not imported.** The inventory explicitly says not to fabricate or infer faculty emails, and none of the listed CS/IS faculty have a published email address in the source material — so no faculty contact records exist. The Faculty Directory itself is treated as informational and out of scope (it's a browse page, not an actionable link).

@@ -1,7 +1,11 @@
 // Site-wide GSAP motion: scroll-reveal for category sections and a subtle
-// lift on resource-row hover. Runs on every page (imported from Base.astro)
-// and re-runs after each Astro View Transitions navigation, since those
-// swap the DOM without a full reload.
+// lift on resource-row hover. Ported from the Astro site's
+// src/scripts/motion.ts. There, it re-ran on every astro:page-load (View
+// Transitions swap). Here there's no full-document swap — React Router just
+// re-renders — so callers re-run it from a useEffect keyed on
+// location.pathname AND on data finishing loading (skeletons have no
+// data-reveal/resource-row classes, so running too early is a no-op; the
+// route calls this again once real content is in the DOM).
 import gsap from 'gsap';
 
 function initReveal() {
@@ -25,10 +29,7 @@ function initRowHover() {
   });
 }
 
-function run() {
+export function runMotion() {
   initReveal();
   initRowHover();
 }
-
-run();
-document.addEventListener('astro:page-load', run);
