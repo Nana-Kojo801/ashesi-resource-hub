@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { FlagButton } from '../components/FlagButton';
 import { Skeleton } from '../components/Skeleton';
 import { useResources } from '../lib/useResources';
-import { categoryColor, slugifyCategory } from '../lib/categories';
+import { categoryColor } from '../lib/categories';
 import { runMotion } from '../lib/motion';
 
 export function ResourcePage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { resources, loading, error } = useResources();
 
   const resource = (resources ?? []).find((r) => r.slug === slug);
@@ -22,7 +23,7 @@ export function ResourcePage() {
       <Layout title="Not found">
         <div className="wrap detail-wrap">
           <p>That resource wasn't found{error ? ' (failed to load data).' : '.'}</p>
-          <Link to="/" className="mono">← Back to the board</Link>
+          <button className="back mono" onClick={() => navigate(-1)}>← Back to the board</button>
         </div>
       </Layout>
     );
@@ -71,7 +72,7 @@ export function ResourcePage() {
   return (
     <Layout title={title} description={description}>
       <div className="wrap detail-wrap">
-        <Link className="back mono" to={`/category/${slugifyCategory(category)}`}>← Back</Link>
+        <button className="back mono" onClick={() => navigate(-1)}>← Back</button>
 
         <article className="drawer">
           <div className="drawer-top" style={{ background: color }}></div>

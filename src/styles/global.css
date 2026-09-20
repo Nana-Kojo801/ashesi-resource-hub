@@ -23,7 +23,7 @@ html, body, #root { margin: 0; padding: 0; width: 100%; overflow-x: hidden; }
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: Archivo, system-ui, sans-serif;
+  font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-wrap: pretty;
 }
@@ -38,8 +38,8 @@ a:hover { color: var(--primary-hover-2); }
 ::selection { background: var(--primary); color: #fff; }
 
 .mono {
-  font-family: 'Martian Mono', monospace;
-  letter-spacing: 0.04em;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -76,7 +76,7 @@ a:hover { color: var(--primary-hover-2); }
 .sos-btn {
   flex: 0 0 auto; display: flex; align-items: center; gap: 7px;
   background: var(--primary); color: #fff; border: none; padding: 9px 13px;
-  cursor: pointer; font-family: 'Martian Mono', monospace; font-size: 10px;
+  cursor: pointer; font-family: 'DM Mono', monospace; font-size: 12px;
   font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
   transition: background 0.14s ease;
 }
@@ -86,7 +86,7 @@ a:hover { color: var(--primary-hover-2); }
 
 .site-footer { border-top: 1px solid var(--border); padding: 24px 0 40px; }
 .site-footer p {
-  font-family: 'Martian Mono', monospace; font-size: 10px; line-height: 1.7;
+  font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.7;
   color: var(--muted); max-width: 60ch; margin: 0;
 }
 

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { runMotion } from '../lib/motion';
 
@@ -42,6 +42,7 @@ const ICONS: Record<string, string> = {
 };
 
 export function EmergencyPage() {
+  const navigate = useNavigate();
   useEffect(() => {
     runMotion();
   }, []);
@@ -86,7 +87,7 @@ export function EmergencyPage() {
       </section>
 
       <section className="wrap back-link">
-        <Link to="/" className="mono">← Back to the resource board</Link>
+        <button className="mono" onClick={() => navigate(-1)}>← Back to the resource board</button>
       </section>
     </Layout>
   );

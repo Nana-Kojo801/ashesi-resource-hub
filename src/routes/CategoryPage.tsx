@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { ResourceCard } from '../components/ResourceCard';
 import { SkeletonResourceRow } from '../components/Skeleton';
@@ -9,6 +9,7 @@ import { runMotion } from '../lib/motion';
 
 export function CategoryPage() {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { resources, loading } = useResources();
 
   const matches = (resources ?? []).filter((r) => slugifyCategory(r.category) === slug);
@@ -22,7 +23,7 @@ export function CategoryPage() {
   return (
     <Layout title={loading ? 'Category' : name}>
       <section className="wrap category-page">
-        <Link className="back mono" to="/">← All categories</Link>
+        <button className="back mono" onClick={() => navigate(-1)}>← All categories</button>
         <div className="head">
           <span className="bar" style={{ background: color }}></span>
           {loading ? (
