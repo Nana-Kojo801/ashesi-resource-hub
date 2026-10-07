@@ -4,13 +4,10 @@ import Base from "../layouts/Base.astro";
 import Hub from "../components/Hub.svelte";
 import { flattenResource } from "../lib/presentation";
 const resources = (await getCollection("resources"))
-  .filter((r) => r.data.status === "active" && r.data.category === "Emergency")
+  .filter((r) => r.data.status === "active")
   .map(flattenResource);
 ---
 
-<Base
-  title="Urgent help"
-  description="Campus emergency contacts, ready to call."
->
-  <Hub client:load mode="emergency" {resources} />
+<Base title="Search resources">
+  <Hub client:load mode="search" {resources} />
 </Base>

@@ -5,10 +5,10 @@ A single, durable directory of official Ashesi University student resources — 
 ## Tech stack
 
 - **Astro** (static output) for every page — the resource board, category pages, resource detail pages, the emergency page and the build-time search index.
-- **Svelte islands**, used for exactly two components: `SearchBox.svelte` and `FlagButton.svelte`.
+- **Svelte** — `Hub.svelte` renders the shared page shell and directory at build time, then hydrates search, category filters and the anonymous report form. Links and resource content are available before hydration.
 - **Astro Content Collections** — one YAML file per resource in `src/content/resources/`, validated by the Zod schema in `src/content/config.ts`.
-- **Fuse.js** for client-side fuzzy search against a build-time JSON index (`src/pages/search-index.json.ts`).
-- **GSAP** for scroll-reveal and hover motion (`src/scripts/motion.ts`); **Astro View Transitions** for category navigation.
+- **Fuse.js** for client-side fuzzy search over the active collection passed to the Hub. Exact title/alias matches take precedence. The build-time JSON index (`src/pages/search-index.json.ts`) remains available for consumers.
+- **Roboto**, self-hosted through Fontsource, with the approved burgundy, rose and gold interface. **Astro View Transitions** handle page navigation; CSS hover transitions respect reduced-motion preferences.
 - **Convex**, scoped *only* to the `reports` (flags) table and the Telegram content-editing bot's HTTP actions. It never stores resource content.
 - **Telegram bot** (via Convex HTTP actions + OpenAI function calling) as the sole way to add, edit or archive resources, writing directly to this repo through the GitHub Contents API.
 
@@ -28,7 +28,17 @@ pnpm dlx convex dev    # in a second terminal — runs the Convex backend locall
 ```bash
 pnpm build             # static build to dist/
 pnpm preview           # preview the static build
+pnpm exec playwright install chromium # first-time browser verification setup
+pnpm test:ui           # build + screenshots + navigation/interaction checks
 ```
+
+## UI design and verification
+
+The seven page compositions follow the approved red mockups: Resources/Home, Academic & Administration, search results, People, resource details, Emergency and Flag a problem. The shared design uses burgundy text and controls, a gold square on the category rail, pale rose action docks with stepped tabs, self-hosted Roboto and mobile bottom navigation.
+
+[Rendered desktop/mobile previews and verification notes](docs/ui/README.md) show the implemented pages. Additional resources and offices remain accessible below the initial composition; all source YAML records and destinations are preserved.
+
+`pnpm test:ui` builds with `PUBLIC_CONVEX_URL` empty so the test cannot submit real reports or send notifications. It checks every generated page's internal links/assets, captures fourteen screenshots in `artifacts/ui`, exercises page transitions, exact intent search, clearing, type filters, empty states, contact search, directory expansion, report validation/error handling and emergency destinations, then checks horizontal overflow at 320, 334, 390, 768, 1140 and 1360 pixels. Screenshots use the actual browser areas from the approved boards (1140 × 960 desktop and 334 × 960 mobile). The image labels describe different viewport sizes; the rendered areas inside those images are the comparison reference.
 
 ## Project structure
 
@@ -38,19 +48,25 @@ src/
     config.ts             # Zod schema for the resources collection
     resources/*.yaml       # one file per resource — the entire content database
   components/
-    SearchBox.svelte       # island: live fuzzy search
-    FlagButton.svelte      # island: anonymous "flag a problem" flow
-    ResourceCard.astro
-    CategorySection.astro
+    Hub.svelte             # shared shell and seven page compositions
+    SearchBox.svelte       # search input and clear/submit controls
+    FlagButton.svelte      # anonymous report form
+    TrackNav.svelte        # desktop category rail
+    ResourceRow.svelte     # resource record and action dock
+    ContactRow.svelte      # contact details and email action
+    Icon.svelte            # shared SVG icons
   pages/
-    index.astro            # category browse board + search + intent chips
+    index.astro            # everyday links, starter resources and intent search
+    search.astro           # dedicated search route
     category/[slug].astro
-    resource/[slug].astro  # resource detail "drawer" page
+    resource/[slug].astro  # resource detail page
+    resource/[slug]/report.astro # dedicated anonymous report page
     emergency.astro
     search-index.json.ts   # build-time-only JSON endpoint for Fuse.js
   layouts/Base.astro
-  lib/categories.ts         # category display order + accent colors
-  scripts/motion.ts          # GSAP scroll-reveal / hover
+  lib/categories.ts         # category display order
+  lib/presentation.ts        # view summaries, ordering and contact extraction
+  styles/hub.css             # shared design tokens and responsive layouts
 convex/
   schema.ts                # reports table only
   flags.ts                 # create (mutation), listOpen (internal query), resolve (internal mutation)
@@ -155,14 +171,14 @@ This project builds to a plain static site (`output: 'static'`, no adapter neede
 
 ## Decisions made while building this (spec left them ambiguous)
 
-1. **Contacts and emergency numbers as resources, not a separate collection.** Both are modeled as ordinary entries in the same `resources` collection, with `type: "Contact"` and `category: "Offices & People"` (the official contact directory) or `category: "Emergency"` (the four campus-safety numbers plus the Academic Affairs Hotline). This keeps one schema, one search index, and one Zod validator, and the home page's category board simply excludes those two categories from its tab row (they're one click away, and Emergency also gets its own dedicated `/emergency` page per the design).
+1. **Contacts and emergency numbers as resources, not a separate collection.** Both are modeled as ordinary entries in the same `resources` collection, with `type: "Contact"` and `category: "Offices & People"` (the official contact directory) or `category: "Emergency"` (the four campus-safety numbers plus the Academic Affairs Hotline). This keeps one schema, one search index, and one Zod validator, and the resource rail includes Offices & People while Emergency has its own dedicated `/emergency` page.
 2. **Faculty were not imported.** The inventory explicitly says not to fabricate or infer faculty emails, and none of the listed CS/IS faculty have a published email address in the source material — so no faculty contact records exist. The Faculty Directory itself is treated as informational and out of scope (it's a browse page, not an actionable link).
 3. **GitHub Contents API tool schema.** Five tools: `list_resources`, `get_resource`, `create_or_update_resource`, `archive_resource`, plus the two flag tools (`list_open_flags`, `resolve_flag`). `create_or_update_resource` always takes fully typed fields (never raw YAML/file text) — `convex/lib/github.ts` is the only place that serializes YAML, so a maintainer's Telegram message can never smuggle a malformed or malicious file body through the model.
 4. **OpenAI model & tool names.** `gpt-4o-mini` by default (overridable via `OPENAI_MODEL`), Chat Completions API with `tools`/`tool_choice: "auto"`, a bounded 6-turn tool loop per incoming message, and no cross-message memory (each Telegram message is a fresh conversation, per spec).
 5. **Category display order & slugs.** A fixed order is defined in `src/lib/categories.ts` (Academic → Library → Career → Support → Housing → Research → International → AI → Offices & People → Emergency); an unrecognized category still renders (sorted last, alphabetically) rather than breaking the build. Slugs are a simple lowercase-kebab transform of the category name.
-6. **Svelte 4 with `@astrojs/svelte`.** Chosen for stability with the pinned Astro 4.x line used here; both islands are minimal and don't need Svelte 5 runes.
-7. **GSAP via npm**, not a CDN `<script>` tag, bundled through Vite/Astro like any other dependency — simpler to keep versioned in `package.json` and avoids an extra network request per page.
-8. **View Transitions depth.** Astro's native `<ViewTransitions />` is enabled globally in `Base.astro` for cross-page morphing (category nav, resource detail "drawer" pages); GSAP's scroll-reveal/hover script re-runs after each transition via the `astro:page-load` event, so motion still applies after a client-side navigation.
+6. **Svelte 4 with `@astrojs/svelte`.** The shared Hub component uses the pinned Astro 4.x integration and renders static HTML before client hydration.
+7. **Self-hosted typography.** Roboto weights 400, 500 and 700 are bundled from the pinned Fontsource package. No remote font request is required.
+8. **View Transitions.** Astro's native `<ViewTransitions />` is enabled globally in `Base.astro`. Each page hydrates its own Hub component, including its search state from the URL query string.
 9. **`output: 'static'`.** Verified reasoning in `astro.config.mjs`: every route, including `search-index.json.ts`, is fully knowable at build time (it just serializes the active resources collection) — there is no server-only logic anywhere in the Astro app, so a plain static build deploys cleanly to Netlify (or any static host) with no adapter.
 10. **Resource "Verified" date.** Shown on the resource detail page as a fixed `2026-09-19`, matching the inventory document's stated research/verification date, since no per-resource `last_verified_at` field was added to the schema (the spec's schema block didn't include one; adding one is a natural follow-up if per-resource verification dates need to be tracked going forward).
 
