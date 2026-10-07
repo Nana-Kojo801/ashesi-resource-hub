@@ -1,7 +1,7 @@
 title: "WebPrint"
 type: "Tool"
 access: "Ashesi login required"
-url: "https://opac.ashesi.edu.gh/"
+url: "https://invence.ashesi.local:9192/app?service=page/UserWebPrint"
 category: "Library & Academic Support"
 description: "Send documents to the library printers."
 aliases:

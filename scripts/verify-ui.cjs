@@ -202,9 +202,37 @@ const types = {
   await page.goto(base + "/category/academic-and-administration/", {
     waitUntil: "networkidle",
   });
-  await page.getByRole("button", { name: "View all resources" }).click();
-  if ((await page.locator(".resource-row").count()) <= 5)
-    throw Error("Additional resources inaccessible");
+  const directory = JSON.parse(fs.readFileSync(path.join(root, "data/resources.json"), "utf8"));
+  const academicCount = directory.filter((r) => r.category === "Academic & Administration").length;
+  if ((await page.locator(".resource-row").count()) !== academicCount || await page.locator(".more-resources").count())
+    throw Error("Category filter hides matching resources behind an expansion button");
+  for (const type of ["Portals", "Forms", "All resources"]) {
+    await page.getByRole("button", { name: type, exact: true }).click();
+    const expected = directory.filter((r) => r.category === "Academic & Administration" && (type === "All resources" || (type === "Portals" ? ["Portal", "Payment"] : ["Form", "Process"]).includes(r.type))).length;
+    if (await page.locator(".resource-row").count() !== expected || await page.locator(".more-resources").count()) throw Error(`Incomplete type filter: ${type}`);
+  }
+  const correctedUrls = {
+    "student-portal-camu-services": "https://www.ashesi.mycamu.com",
+    "academic-requests-via-camu": "https://www.ashesi.mycamu.com",
+    "webprint": "https://invence.ashesi.local:9192/app?service=page/UserWebPrint",
+    "maintenance-service-request": "https://ashesi-operations.web.app/submit-issue",
+    "accessibility-services-meeting-request-form": "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=9WHGbQzuDka9tANK6z82cJZAadFZhghJpTyyEpn6eRNURUFJTUhKWkUzTzZDOFRaRjJQVlBZTTFWMi4u",
+  };
+  for (const [slug, url] of Object.entries(correctedUrls)) {
+    if (directory.find((r) => r.slug === slug)?.url !== url) throw Error(`Incorrect generated destination: ${slug}`);
+    await page.goto(base + `/resource/${slug}`, { waitUntil: "networkidle" });
+    if (await page.locator(".detail-action > a").getAttribute("href") !== url) throw Error(`Incorrect rendered destination: ${slug}`);
+  }
+  for (const slug of ["accessibility-and-accommodation-request", "natembea-health-center", "job-shadowing-sign-up", "global-mentorship-initiative"]) {
+    if (directory.some((r) => r.slug === slug) || fs.existsSync(path.join(root, "resource", slug, "index.html"))) throw Error(`Removed resource remains published: ${slug}`);
+  }
+  await page.goto(base, { waitUntil: "networkidle" });
+  const shortcuts = await page.locator(".quick-links > a").evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+  if (!shortcuts.includes(correctedUrls.webprint) || !shortcuts.includes(correctedUrls["student-portal-camu-services"])) throw Error("Everyday links did not pick up corrected URLs");
+  await page.locator("#resource-search").fill("ashesi");
+  await page.waitForFunction(() => parseInt(document.querySelector(".result-count")?.textContent || "0") > 12);
+  const searchCount = parseInt(await page.locator(".result-count").innerText());
+  if (await page.locator(".search-result").count() !== searchCount || await page.locator(".more-resources").count()) throw Error("Search results truncated behind an expansion button");
 
   await page.goto(base, { waitUntil: "networkidle" });
   await page.locator("#resource-search").fill("my AC is broken");
@@ -407,7 +435,7 @@ const types = {
         checks,
         errors,
         functional:
-          "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations, localized delayed loading on seven routes at two widths, preserved search/filter/report state, in-place retry, reduced motion, stationary persistent mobile chrome, full People directory and static/client route SEO passed",
+          "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations, localized delayed loading on seven routes at two widths, preserved search/filter/report state, in-place retry, reduced motion, stationary persistent mobile chrome, full People directory, untruncated category/type/search filters, corrected resource destinations, archived resource exclusion and static/client route SEO passed",
       },
       null,
       2,

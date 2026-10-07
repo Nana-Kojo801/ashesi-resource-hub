@@ -36,7 +36,6 @@ export default function Hub({
     () => new URLSearchParams(window.location.search).get("q") || "",
   );
   const [typeFilter, setTypeFilter] = useState("All resources");
-  const [showAll, setShowAll] = useState(false);
   const search = useMemo(
     () =>
       new Fuse(resources, {
@@ -138,7 +137,6 @@ export default function Hub({
   function setQuery(value) {
     setQueryState(value);
     onSearchChange?.(value.trim().length > 0);
-    setShowAll(false);
     const url = new URL(window.location.href);
     if (value.trim()) url.searchParams.set("q", value);
     else url.searchParams.delete("q");
@@ -375,7 +373,7 @@ export default function Hub({
                           {external(resource.url) ? (
                             <>
                               <p>
-                                {host === "forms.office.com"
+                                {["forms.office.com", "forms.cloud.microsoft"].includes(host)
                                   ? "Opens Microsoft Forms"
                                   : "Opens the resource"}
                                 {" in a new tab. "}
@@ -501,10 +499,7 @@ export default function Hub({
                                     <Fragment key={_index4}>
                                       <button
                                         aria-pressed={typeFilter === label}
-                                        onClick={() => {
-                                          setTypeFilter(label);
-                                          setShowAll(false);
-                                        }}
+                                        onClick={() => setTypeFilter(label)}
                                         className={classes("", {
                                           active: typeFilter === label,
                                         })}
@@ -521,14 +516,6 @@ export default function Hub({
                               >
                                 {loading || error ? <DataState kind="resource" count={5} error={error} retry={retry} /> : <>
                                 {filtered
-                                  .slice(
-                                    0,
-                                    showAll ||
-                                      query ||
-                                      typeFilter !== "All resources"
-                                      ? undefined
-                                      : 5,
-                                  )
                                   .map((entry, _index5) => (
                                     <Fragment key={entry.slug}>
                                       <ResourceRow
@@ -561,23 +548,6 @@ export default function Hub({
                                       <Icon name={"arrow"} size={18}></Icon>
                                     </a>
                                   </div>
-                                </>
-                              ) : null}
-                              {!showAll &&
-                              !query &&
-                              typeFilter === "All resources" &&
-                              filtered.length > 5 ? (
-                                <>
-                                  <button
-                                    onClick={() => setShowAll(true)}
-                                    className={classes(
-                                      "more-resources directory-continuation",
-                                      {},
-                                    )}
-                                  >
-                                    {"View all resources "}
-                                    <Icon name={"arrow"} size={18}></Icon>
-                                  </button>
                                 </>
                               ) : null}
                             </>
@@ -617,7 +587,6 @@ export default function Hub({
                                         : "results"}
                                     </p>
                                     {matched
-                                      .slice(0, showAll ? undefined : 12)
                                       .map((entry, _index6) => (
                                         <Fragment key={entry.slug}>
                                           <article
@@ -747,19 +716,6 @@ export default function Hub({
                                               : "Try a different phrase, or browse a category below."}
                                           </p>
                                         </div>
-                                      </>
-                                    ) : null}
-                                    {matched.length > 12 && !showAll ? (
-                                      <>
-                                        <button
-                                          onClick={() => setShowAll(true)}
-                                          className={classes(
-                                            "more-resources",
-                                            {},
-                                          )}
-                                        >
-                                          {"Show all results"}
-                                        </button>
                                       </>
                                     ) : null}
                                     </>}

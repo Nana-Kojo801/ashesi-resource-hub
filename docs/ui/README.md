@@ -2,7 +2,7 @@
 
 These browser preview boards document the approved React/Vite layouts, with desktop on the left and mobile on the right. The current app mark and loading captures are linked below. The seven approved mockups guided the burgundy/rose/gold palette, Roboto typography, category rail, stepped action docks, page spacing and mobile navigation.
 
-The screenshots use the actual UI areas in the reference boards: 1140 × 960 desktop and 334 × 960 mobile. Additional resource records remain accessible through the controls below the initial page composition. People shows all 27 office contacts immediately. The YAML collection and original resource destinations are unchanged.
+The screenshots use the actual UI areas in the reference boards: 1140 × 960 desktop and 334 × 960 mobile. Category, type-filtered and search lists show every matching resource immediately. People shows all 27 office contacts immediately. Resource destinations and active entries reflect the latest maintainer corrections.
 
 | Page | Screenshot |
 | --- | --- |
@@ -34,7 +34,8 @@ Route-specific HTML heads give direct visits and shared links the correct title,
 
 - Client-side React Router navigation and category selection without document reloads, browser back navigation, cached resource data and search after navigation.
 - Exact alias intent search ("my AC is broken" resolves to Maintenance), clearing and no-result states.
-- Category type filters, resource expansion, and the complete office directory without an expansion button.
+- Category/type filters and search results show every match without an expansion button, alongside the complete office directory.
+- Corrected CAMU, WebPrint, maintenance and accessibility-form destinations; archived entries are excluded from the active dataset and generated SEO routes.
 - Office search and original email/telephone destinations.
 - Required report reason and honest failure handling when no backend is configured.
 - All four emergency telephone destinations and the Academic Affairs email hotline.

@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { pageSeo, SITE_NAME, SHARE_IMAGE } from "../src/lib/seo.js";
@@ -7,6 +7,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dist = path.join(root, "dist");
 const template = readFileSync(path.join(dist, "index.html"), "utf8");
 const resources = JSON.parse(readFileSync(path.join(dist, "data/resources.json"), "utf8"));
+// Clear only this generator's route directories so archived/renamed resources
+// cannot keep an old share preview or crawlable HTML page after a rebuild.
+for (const directory of ["resource", "category", "contacts", "emergency", "search"]) {
+  rmSync(path.join(dist, directory), { recursive: true, force: true });
+}
 const escape = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const slug = (value) => value.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 const routes = [
