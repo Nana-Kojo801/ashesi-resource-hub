@@ -1,0 +1,20 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../../layouts/Base.astro";
+import Hub from "../../../components/Hub.svelte";
+import { flattenResource } from "../../../lib/presentation";
+export async function getStaticPaths() {
+  const resources = (await getCollection("resources"))
+    .filter((r) => r.data.status === "active")
+    .map(flattenResource);
+  return resources.map((resource) => ({
+    params: { slug: resource.slug },
+    props: { resource },
+  }));
+}
+const { resource } = Astro.props;
+---
+
+<Base title={`Flag a problem — ${resource.title}`}>
+  <Hub client:load mode="report" {resource} />
+</Base>

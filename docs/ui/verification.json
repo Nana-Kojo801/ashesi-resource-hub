@@ -1,0 +1,230 @@
+{
+  "checks": [
+    {
+      "page": "home",
+      "viewport": "desktop",
+      "overflow": false,
+      "h1": "Where do you need to go?"
+    },
+    {
+      "page": "category",
+      "viewport": "desktop",
+      "overflow": false,
+      "h1": "Academic & Administration"
+    },
+    {
+      "page": "search",
+      "viewport": "desktop",
+      "overflow": false,
+      "h1": "Search resources"
+    },
+    {
+      "page": "people",
+      "viewport": "desktop",
+      "overflow": false,
+      "h1": "Who can help?"
+    },
+    {
+      "page": "detail",
+      "viewport": "desktop",
+      "overflow": false,
+      "h1": "Maintenance Service Request"
+    },
+    {
+      "page": "emergency",
+      "viewport": "desktop",
+      "overflow": false,
+      "h1": "Urgent help"
+    },
+    {
+      "page": "report",
+      "viewport": "desktop",
+      "overflow": false,
+      "h1": "Flag a problem"
+    },
+    {
+      "page": "home",
+      "viewport": "mobile",
+      "overflow": false,
+      "h1": "Where do you need to go?"
+    },
+    {
+      "page": "category",
+      "viewport": "mobile",
+      "overflow": false,
+      "h1": "Academic & Administration"
+    },
+    {
+      "page": "search",
+      "viewport": "mobile",
+      "overflow": false,
+      "h1": "Search resources"
+    },
+    {
+      "page": "people",
+      "viewport": "mobile",
+      "overflow": false,
+      "h1": "Who can help?"
+    },
+    {
+      "page": "detail",
+      "viewport": "mobile",
+      "overflow": false,
+      "h1": "Maintenance Service Request"
+    },
+    {
+      "page": "emergency",
+      "viewport": "mobile",
+      "overflow": false,
+      "h1": "Urgent help"
+    },
+    {
+      "page": "report",
+      "viewport": "mobile",
+      "overflow": false,
+      "h1": "Flag a problem"
+    },
+    {
+      "page": "home",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "category",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "search",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "people",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "detail",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "emergency",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "report",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "page": "category",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "page": "search",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "page": "people",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "page": "detail",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "page": "emergency",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "page": "report",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "category",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "search",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "people",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "detail",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "emergency",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "report",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "page": "home",
+      "width": 1360,
+      "overflow": false
+    },
+    {
+      "page": "category",
+      "width": 1360,
+      "overflow": false
+    },
+    {
+      "page": "search",
+      "width": 1360,
+      "overflow": false
+    },
+    {
+      "page": "people",
+      "width": 1360,
+      "overflow": false
+    },
+    {
+      "page": "detail",
+      "width": 1360,
+      "overflow": false
+    },
+    {
+      "page": "emergency",
+      "width": 1360,
+      "overflow": false
+    },
+    {
+      "page": "report",
+      "width": 1360,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "functional": "Intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations passed"
+}

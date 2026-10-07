@@ -6,3 +6,6 @@ dist/
 .DS_Store
 npm-debug.log*
 convex/_generated/
+
+# Browser verification output
+artifacts/
