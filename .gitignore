@@ -12,3 +12,6 @@ convex/_generated/
 public/data/
 public/sitemap.xml
 public/robots.txt
+
+# UI browser verification output
+artifacts/

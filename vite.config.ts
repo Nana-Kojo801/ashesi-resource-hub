@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 // Fully client-rendered SPA build: a single index.html + JS bundle, no
 // server-rendered/prerendered content pages. The resources directory is

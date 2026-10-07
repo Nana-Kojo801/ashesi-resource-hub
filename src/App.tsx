@@ -1,16 +1,15 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { Home } from './routes/Home';
-import { CategoryPage } from './routes/CategoryPage';
-import { ResourcePage } from './routes/ResourcePage';
-import { EmergencyPage } from './routes/EmergencyPage';
-import { ContactsPage } from './routes/ContactsPage';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { HubPage } from "./routes/HubPage";
 
 const router = createBrowserRouter([
-  { path: '/', element: <Home /> },
-  { path: '/category/:slug', element: <CategoryPage /> },
-  { path: '/resource/:slug', element: <ResourcePage /> },
-  { path: '/emergency', element: <EmergencyPage /> },
-  { path: '/contacts', element: <ContactsPage /> },
+  { path: "/", element: <HubPage mode="home" /> },
+  { path: "/search", element: <HubPage mode="search" /> },
+  { path: "/category/:slug", element: <HubPage mode="category" /> },
+  { path: "/resource/:slug/report", element: <HubPage mode="report" /> },
+  { path: "/resource/:slug", element: <HubPage mode="detail" /> },
+  { path: "/emergency", element: <HubPage mode="emergency" /> },
+  { path: "/contacts", element: <HubPage mode="people" /> },
+  { path: "*", element: <HubPage mode="missing" /> },
 ]);
 
 export function App() {

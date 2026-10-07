@@ -67,10 +67,11 @@ function slugifyCategory(name) {
 
 const categorySlugs = [...new Set(active.map((r) => r.category))].map(slugifyCategory);
 
-const staticUrls = ['/', '/emergency'];
+const staticUrls = ['/', '/emergency', '/contacts', '/search'];
 const categoryUrls = categorySlugs.map((slug) => `/category/${slug}`);
 const resourceUrls = active.map((r) => `/resource/${r.slug}`);
-const allUrls = [...staticUrls, ...categoryUrls, ...resourceUrls];
+const reportUrls = active.map((r) => `/resource/${r.slug}/report`);
+const allUrls = [...staticUrls, ...categoryUrls, ...resourceUrls, ...reportUrls];
 
 const today = new Date().toISOString().slice(0, 10);
 const sitemap =
