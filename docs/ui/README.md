@@ -14,6 +14,14 @@ The screenshots use the actual UI areas in the reference boards: 1140 × 960 des
 | Emergency | [Desktop and mobile](previews/emergency.png) |
 | Flag a problem | [Desktop and mobile](previews/report.png) |
 
+## Loading and motion
+
+The header, category navigation, search inputs and filters render immediately. Only fetched rows, destinations and resource metadata use rose skeletons. Search text, filters and report notes remain intact when the data arrives. Failed requests show local retry controls, and the shared resource cache prevents loading flashes during subsequent navigation.
+
+Pages and new records enter with short, staggered transitions. Supported browsers crossfade route content through React Router view transitions; other browsers retain CSS entrances. Buttons, action arrows and form selections have subtle interaction transitions. Reduced-motion settings disable both entrances and shimmer.
+
+[Mobile loading view](previews/loading-home-mobile.png) · [Desktop loading view](previews/loading-home-desktop.png)
+
 ## Verification
 
 `pnpm test:ui` passes. It builds the Vite SPA and generated resource dataset, validates local links/assets, captures all fourteen views, checks JavaScript errors and horizontal overflow at six widths, and exercises:
@@ -24,6 +32,8 @@ The screenshots use the actual UI areas in the reference boards: 1140 × 960 des
 - Office search and original email/telephone destinations.
 - Required report reason and honest failure handling when no backend is configured.
 - All four emergency telephone destinations and the Academic Affairs email hotline.
+- Delayed loading on all seven pages at desktop and mobile widths, preserving interactive search/filter/report state, with no loading overflow.
+- Navigation while the initial request is pending, no skeleton flashes with cached data, local retry after a failed request, and reduced-motion behavior.
 
 [Machine-readable results](verification.json) contain the viewport checks. The test intentionally builds without a live Convex URL; successful report delivery to Convex/Telegram was not exercised. The production form retains the existing `flags:create` mutation and `VITE_CONVEX_URL` configuration.
 

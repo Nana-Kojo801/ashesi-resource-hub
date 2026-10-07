@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Hub from "../components/Hub";
 import { useResources } from "../lib/useResources";
-import { slugifyCategory } from "../lib/categories";
+import { CATEGORY_ORDER, slugifyCategory } from "../lib/categories";
 
 type Mode =
   | "home"
@@ -17,13 +17,13 @@ type Mode =
 // Preserve main's React Router and cached resource loading. Reuse the approved
 // React view with the approved markup and shared design tokens.
 export function HubPage({ mode }: { mode: Mode }) {
-  const { resources, loading, error } = useResources();
+  const { resources, loading, error, retry } = useResources();
   const { slug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const category =
     resources?.find((r) => slugifyCategory(r.category) === slug)?.category ||
-    "";
+    ((loading || error) ? CATEGORY_ORDER.find((name) => slugifyCategory(name) === slug) : "") || "";
   const resource = resources?.find((r) => r.slug === slug) || null;
   const resolvedMode =
     mode === "category" && category === "Offices & People" ? "people" : mode;
@@ -89,41 +89,28 @@ export function HubPage({ mode }: { mode: Mode }) {
     )
       return;
     event.preventDefault();
-    navigate(url.pathname + url.search + url.hash);
+    navigateSmoothly(url.pathname + url.search + url.hash);
   }
 
-  if (loading)
-    return (
-      <main className="page-content" role="status">
-        Loading resources…
-      </main>
-    );
-  if (error)
-    return (
-      <main className="page-content">
-        <h1>Could not load resources</h1>
-        <p className="subtitle">Please refresh and try again.</p>
-      </main>
-    );
-  if (missing)
-    return (
-      <main className="page-content">
-        <h1>Resource not found</h1>
-        <p className="subtitle">This resource may have been retired.</p>
-        <Link className="outline-button" to="/">
-          Browse resources
-        </Link>
-      </main>
-    );
+  function navigateSmoothly(href: string) {
+    navigate(href, {
+      viewTransition: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    });
+  }
+
   return (
     <div onClick={followInternalLink}>
       <Hub
         key={location.key}
-        mode={resolvedMode}
+        mode={missing ? "missing" : resolvedMode}
         resources={resources || []}
         category={category}
         resource={resource}
-        navigate={navigate}
+        navigate={navigateSmoothly}
+        loading={loading}
+        error={error}
+        retry={retry}
+        resourceSlug={slug || ""}
       />
     </div>
   );

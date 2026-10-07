@@ -1,46 +1,39 @@
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import type { Resource } from "./types";
 
-// The build script generates the active directory from the source YAML. Cache
-// the fetch promise so navigation shares one dataset; loading/error state is
-// handled honestly on the first request.
-let cache: Promise<Resource[]> | null = null;
-
-function fetchResources(): Promise<Resource[]> {
-  if (!cache) {
-    cache = fetch("/data/resources.json").then((res) => {
-      if (!res.ok)
-        throw new Error(`Failed to load resources.json: ${res.status}`);
+// Share the request and resolved snapshot across routes. Cached navigation
+// renders synchronously without briefly falling back to placeholders.
+let snapshot: { resources: Resource[] | null; loading: boolean; error: Error | null } = {
+  resources: null, loading: true, error: null,
+};
+let request: Promise<void> | null = null;
+const listeners = new Set<() => void>();
+const getSnapshot = () => snapshot;
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+function publish(next: typeof snapshot) {
+  snapshot = next;
+  listeners.forEach((listener) => listener());
+}
+function fetchResources() {
+  if (request) return;
+  publish({ resources: null, loading: true, error: null });
+  request = fetch("/data/resources.json")
+    .then((res) => {
+      if (!res.ok) throw new Error(`Failed to load resources.json: ${res.status}`);
       return res.json();
-    });
-  }
-  return cache;
+    })
+    .then((resources: Resource[]) => publish({ resources, loading: false, error: null }))
+    .catch((err) => publish({ resources: null, loading: false,
+      error: err instanceof Error ? err : new Error(String(err)) }))
+    .finally(() => { request = null; });
 }
-
-export interface UseResourcesResult {
-  resources: Resource[] | null;
-  loading: boolean;
-  error: Error | null;
-}
-
-export function useResources(): UseResourcesResult {
-  const [resources, setResources] = useState<Resource[] | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-
+export function useResources() {
+  const state = useSyncExternalStore(subscribe, getSnapshot);
   useEffect(() => {
-    let cancelled = false;
-    fetchResources()
-      .then((data) => {
-        if (!cancelled) setResources(data);
-      })
-      .catch((err) => {
-        if (!cancelled)
-          setError(err instanceof Error ? err : new Error(String(err)));
-      });
-    return () => {
-      cancelled = true;
-    };
+    if (!snapshot.resources && !snapshot.error) fetchResources();
   }, []);
-
-  return { resources, loading: resources === null && error === null, error };
+  return { ...state, retry: fetchResources };
 }

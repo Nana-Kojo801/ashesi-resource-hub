@@ -94,10 +94,11 @@ const types = {
   ];
   const errors = [],
     checks = [];
-  const page = await browser.newPage({
+  const context = await browser.newContext({
     viewport: { width: 1140, height: 960 },
     deviceScaleFactor: 1,
   });
+  const page = await context.newPage();
   page.on("pageerror", (e) => errors.push(e.message));
   page.setDefaultTimeout(15000);
   for (const [label, width, height] of [
@@ -125,6 +126,10 @@ const types = {
   await page.goto(base, { waitUntil: "networkidle" });
   await page.evaluate(() => {
     window.__spaMarker = "loaded";
+    window.__skeletonFlash = false;
+    new MutationObserver(() => {
+      if (document.querySelector(".skeleton")) window.__skeletonFlash = true;
+    }).observe(document.body, { childList: true, subtree: true });
   });
   let repeatedResourceFetches = 0;
   const countResourceFetches = (request) => {
@@ -169,6 +174,7 @@ const types = {
     () =>
       document.querySelector("h1")?.textContent === "Where do you need to go?",
   );
+  if (await page.evaluate(() => window.__skeletonFlash)) throw Error("Cached navigation flashed skeletons");
   if (repeatedResourceFetches !== 0)
     throw Error("Navigation fetched resource data again");
   page.removeListener("request", countResourceFetches);
@@ -260,6 +266,95 @@ const types = {
       });
     }
   }
+  // Hold the actual data request open: only fetched regions may be skeletons.
+  const data = fs.readFileSync(path.join(root, "data/resources.json"), "utf8");
+  for (const width of [334, 1140]) {
+    for (const [name, route] of pages) {
+      const delayed = await page.context().newPage();
+      await delayed.setViewportSize({ width, height: 960 });
+      await delayed.emulateMedia({ reducedMotion: "reduce" });
+      delayed.on("pageerror", (e) => errors.push(e.message));
+      let release;
+      const pending = new Promise((resolve) => { release = resolve; });
+      await delayed.route("**/data/resources.json", async (request) => {
+        await pending;
+        await request.fulfill({ contentType: "application/json", body: data });
+      });
+      await delayed.goto(base + route, { waitUntil: "domcontentloaded" });
+      await delayed.locator(".page-content .skeleton").first().waitFor();
+      if (!(await delayed.locator(".site-header").isVisible())) throw Error("Header missing during loading");
+      if ((await delayed.locator(".search-box .skeleton").count()) !== 0) throw Error("Search input was skeletonized");
+      if (name === "home" || name === "people" || name === "detail") {
+        await delayed.screenshot({ path: path.join(out, `loading-${name}-${width}.png`) });
+      }
+      if (await delayed.locator("#resource-search").count()) {
+        await delayed.locator("#resource-search").fill(name === "people" ? "finance" : name === "category" ? "Academic Request Form" : "my AC is broken");
+        await delayed.evaluate(() => { window.__searchInput = document.querySelector("#resource-search"); });
+      }
+      if (name === "category") {
+        await delayed.getByRole("button", { name: "Forms", exact: true }).click();
+      }
+      if (name === "report") {
+        await delayed.getByLabel("The link is dead", { exact: true }).check();
+        await delayed.getByLabel("Anything else? (optional)").fill("Keep this note while loading");
+        if (!(await delayed.getByRole("button", { name: "Send report", exact: true }).isDisabled())) throw Error("Report allowed before resource verified");
+      }
+      if (await delayed.evaluate(() => document.documentElement.scrollWidth > innerWidth)) throw Error(`Loading overflow: ${name} ${width}`);
+      const reducedAnimation = await delayed.locator(".skeleton").first().evaluate((el) => getComputedStyle(el, "::after").animationName);
+      if (reducedAnimation !== "none") throw Error("Reduced motion shimmer still active");
+      release();
+      await delayed.waitForFunction(() => !document.querySelector(".skeleton"));
+      if (await delayed.locator("#resource-search").count()) {
+        if (!(await delayed.evaluate(() => window.__searchInput === document.querySelector("#resource-search")))) throw Error("Loading replaced the search input");
+        const selector = name === "people" ? ".contact-row" : name === "category" ? ".resource-row" : ".search-result";
+        if ((await delayed.locator(selector).count()) !== 1) throw Error(`Pending search not applied: ${name}`);
+      }
+      if (name === "report" && await delayed.getByRole("button", { name: "Send report", exact: true }).isDisabled()) throw Error("Report state lost while loading");
+      await delayed.close();
+    }
+  }
+  // Navigation is usable even before the shared request resolves. Also exercise
+  // the CSS entrance fallback in a browser without the View Transition API.
+  const pendingPage = await page.context().newPage();
+  await pendingPage.setViewportSize({ width: 390, height: 844 });
+  await pendingPage.addInitScript(() => { document.startViewTransition = undefined; });
+  pendingPage.on("pageerror", (e) => errors.push(e.message));
+  let unblock;
+  const gate = new Promise((resolve) => { unblock = resolve; });
+  let pendingRequests = 0;
+  await pendingPage.route("**/data/resources.json", async (request) => {
+    pendingRequests++;
+    await gate;
+    await request.fulfill({ contentType: "application/json", body: data });
+  });
+  await pendingPage.goto(base, { waitUntil: "domcontentloaded" });
+  await pendingPage.locator(".skeleton").first().waitFor();
+  await pendingPage.getByRole("navigation", { name: "Main navigation" }).last().getByRole("link", { name: "People", exact: true }).click();
+  await pendingPage.waitForFunction(() => document.querySelector("h1")?.textContent === "Who can help?");
+  await pendingPage.locator("#resource-search").fill("finance");
+  unblock();
+  await pendingPage.waitForSelector(".contact-row:not(.skeleton-record)");
+  if (pendingRequests !== 1 || await pendingPage.locator(".contact-row").count() !== 1) throw Error("Navigation during loading lost shared request or search");
+  await pendingPage.close();
+  // A failed fetch keeps the shell/search alive, and retry recovers in-place.
+  const retryPage = await page.context().newPage();
+  await retryPage.setViewportSize({ width: 390, height: 844 });
+  retryPage.on("pageerror", (e) => errors.push(e.message));
+  let attempts = 0;
+  await retryPage.route("**/data/resources.json", (request) => {
+    attempts++;
+    return attempts === 1 ? request.fulfill({ status: 503, body: "Unavailable" }) : request.fulfill({ contentType: "application/json", body: data });
+  });
+  await retryPage.goto(base, { waitUntil: "networkidle" });
+  await retryPage.locator("#resource-search").fill("my AC is broken");
+  await retryPage.getByRole("button", { name: "Try again", exact: true }).click();
+  await retryPage.waitForSelector(".search-result");
+  if (attempts !== 2 || await retryPage.locator(".search-result").count() !== 1) throw Error("In-place retry failed");
+  const animation = await retryPage.locator(".search-result").evaluate((el) => getComputedStyle(el).animationName);
+  if (animation !== "content-arrive") throw Error("Entrance animations missing");
+  await retryPage.emulateMedia({ reducedMotion: "reduce" });
+  if (await retryPage.locator(".search-result").evaluate((el) => getComputedStyle(el).animationName) !== "none") throw Error("Reduced motion entrance active");
+  await retryPage.close();
   await page.close();
   await browser.close();
   server.close();
@@ -270,7 +365,7 @@ const types = {
         checks,
         errors,
         functional:
-          "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations passed",
+          "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations, localized delayed loading on seven routes at two widths, preserved search/filter/report state, in-place retry and reduced motion passed",
       },
       null,
       2,

@@ -7,6 +7,7 @@ import ResourceRow from "./ResourceRow";
 import ContactRow from "./ContactRow";
 import SearchBox from "./SearchBox";
 import FlagButton from "./FlagButton";
+import DataState, { Skeleton, DetailState } from "./DataState";
 import { CATEGORY_ORDER, sortCategories } from "../lib/categories";
 import {
   actionLabel,
@@ -18,13 +19,17 @@ import {
   prioritize,
   starterSlugs,
 } from "../lib/presentation";
-/** @param {{mode?: string, resources?: import("../lib/types").Resource[], category?: string, resource?: import("../lib/types").Resource | null, navigate: (href: string) => void}} props */
+/** @param {{mode?: string, resources?: import("../lib/types").Resource[], category?: string, resource?: import("../lib/types").Resource | null, navigate: (href: string) => void, loading?: boolean, error?: Error | null, retry?: () => void, resourceSlug?: string}} props */
 export default function Hub({
   mode = "home",
   resources = [],
   category = "",
   resource = null,
   navigate,
+  loading = false,
+  error = null,
+  retry,
+  resourceSlug = "",
 }) {
   const [query, setQueryState] = useState(
     () => new URLSearchParams(window.location.search).get("q") || "",
@@ -45,12 +50,12 @@ export default function Hub({
     [resources],
   );
   const categories = sortCategories([
-    ...new Set(resources.map((r) => r.category)),
+    ...new Set(loading || error ? CATEGORY_ORDER : resources.map((r) => r.category)),
   ]).filter((c) => c !== "Emergency");
   const searching =
     mode === "search" || (mode === "home" && query.trim().length > 0);
   const people = mode === "people";
-  const current = mode === "detail" ? resource.category : category;
+  const current = mode === "detail" ? resource?.category || "" : category;
   // A verbatim student phrase should resolve to its intended resource. Use
   // fuzzy search when no title or alias is an exact match.
   const exactMatches = resources.filter((r) =>
@@ -135,7 +140,7 @@ export default function Hub({
     const url = new URL(window.location.href);
     if (value.trim()) url.searchParams.set("q", value);
     else url.searchParams.delete("q");
-    history.replaceState(null, "", url);
+    history.replaceState(history.state, "", url);
   }
   useEffect(() => {
     if (mode === "search") document.getElementById("resource-search")?.focus();
@@ -197,6 +202,8 @@ export default function Hub({
               people={people}
               report={mode === "report"}
               resource={resource}
+              resourceSlug={resourceSlug}
+              loading={loading}
               searching={searching}
             ></TrackNav>
           </>
@@ -213,7 +220,9 @@ export default function Hub({
             "emergency-page": mode === "emergency",
           })}
         >
-          {mode === "emergency" ? (
+          {mode === "missing" ? (
+            <><h1>Resource not found</h1><p className="subtitle">This resource may have been retired.</p><a className="outline-button" href="/">Browse resources</a></>
+          ) : mode === "emergency" ? (
             <>
               <a href={"/"} className={classes("back-link mobile-only", {})}>
                 <Icon name={"back"} size={18}></Icon>
@@ -225,7 +234,8 @@ export default function Hub({
                   {"Campus emergency contacts, ready to call."}
                 </p>
               </div>
-              <div className={classes("emergency-directory", {})}>
+              <div aria-busy={loading} className={classes("emergency-directory", {})}>
+                {error && <DataState error={error} retry={retry} />}
                 {emergency.map(([slug, label, provider], _index0) => (
                   <Fragment key={_index0}>
                     {(() => {
@@ -268,12 +278,13 @@ export default function Hub({
                                 </div>
                               </article>
                             </>
-                          ) : null}
+                          ) : loading ? <article className="emergency-row"><div className="emergency-content"><div><h2>{label}</h2><p>{provider}</p></div><Skeleton width="180px" /></div><div className="action-dock emergency-action"><Skeleton className="skeleton-button" /></div></article> : null}
                         </>
                       );
                     })()}
                   </Fragment>
                 ))}
+                {loading && <article className="emergency-row hotline-row"><div className="emergency-content"><div><h2>Academic Affairs Hotline</h2><p>Urgent academic assistance</p></div><Skeleton width="180px" /></div><div className="action-dock emergency-action"><Skeleton className="skeleton-button" /></div></article>}
                 {hotline ? (
                   <>
                     <article
@@ -311,23 +322,24 @@ export default function Hub({
               {mode === "report" ? (
                 <>
                   <a
-                    href={detailHref(resource)}
+                    href={`/resource/${resourceSlug}`}
                     className={classes("back-link mobile-only", {})}
                   >
                     <Icon name={"back"} size={18}></Icon>
                     {"Back to resource"}
                   </a>
                   <h1>{"Flag a problem"}</h1>
-                  <p className={classes("subtitle", {})}>{resource.title}</p>
+                  <p className="subtitle">{loading ? <Skeleton width="65%" /> : resource?.title}</p>
+                  {error && <DataState error={error} retry={retry} />}
                   <FlagButton
-                    resourceSlug={resource.slug}
-                    resourceTitle={resource.title}
+                    resourceSlug={resourceSlug}
+                    unavailable={loading || !!error}
                   ></FlagButton>
                 </>
               ) : (
                 <>
                   {mode === "detail" ? (
-                    <>
+                    loading || error ? <><a href="/" className="back-link">Back to resources</a><DetailState error={error} retry={retry} /></> : <>
                       <div className={classes("breadcrumb", {})}>
                         <a href={"/"}>{"Resources"}</a>
                         <span>{"/"}</span>
@@ -453,12 +465,13 @@ export default function Hub({
                           ></SearchBox>
                           <div
                             aria-live={"polite"}
-                            className={classes("contact-list", {})}
+                            aria-busy={loading} className={classes("contact-list", {})}
                           >
+                            {loading || error ? <DataState kind="contact" count={3} error={error} retry={retry} /> : <>
                             {contacts
                               .slice(0, showAll || query ? undefined : 3)
                               .map((contact, _index2) => (
-                                <Fragment key={_index2}>
+                                <Fragment key={contact.slug}>
                                   <ContactRow resource={contact}></ContactRow>
                                 </Fragment>
                               ))}
@@ -473,6 +486,7 @@ export default function Hub({
                                 </div>
                               </>
                             ) : null}
+                            </>}
                           </div>
                           {!showAll && !query && contacts.length > 3 ? (
                             <>
@@ -558,8 +572,9 @@ export default function Hub({
                               </div>
                               <div
                                 aria-live={"polite"}
-                                className={classes("resource-list", {})}
+                                aria-busy={loading} className={classes("resource-list", {})}
                               >
+                                {loading || error ? <DataState kind="resource" count={5} error={error} retry={retry} /> : <>
                                 {filtered
                                   .slice(
                                     0,
@@ -570,7 +585,7 @@ export default function Hub({
                                       : 5,
                                   )
                                   .map((entry, _index5) => (
-                                    <Fragment key={_index5}>
+                                    <Fragment key={entry.slug}>
                                       <ResourceRow
                                         resource={entry}
                                       ></ResourceRow>
@@ -588,6 +603,7 @@ export default function Hub({
                                     </div>
                                   </>
                                 ) : null}
+                                </>}
                               </div>
                               {category === "Academic & Administration" ? (
                                 <>
@@ -641,13 +657,14 @@ export default function Hub({
                                 <>
                                   <section
                                     aria-live={"polite"}
-                                    className={classes("search-results", {})}
+                                    aria-busy={loading} className={classes("search-results", {})}
                                   >
                                     <h2
                                       className={classes("section-track", {})}
                                     >
                                       {"Results"}
                                     </h2>
+                                    {loading || error ? <DataState kind="search" count={2} error={error} retry={retry} /> : <>
                                     <p className={classes("result-count", {})}>
                                       {matched.length}
                                       {matched.length === 1
@@ -657,7 +674,7 @@ export default function Hub({
                                     {matched
                                       .slice(0, showAll ? undefined : 12)
                                       .map((entry, _index6) => (
-                                        <Fragment key={_index6}>
+                                        <Fragment key={entry.slug}>
                                           <article
                                             className={classes(
                                               "search-result",
@@ -800,6 +817,7 @@ export default function Hub({
                                         </button>
                                       </>
                                     ) : null}
+                                    </>}
                                   </section>
                                   <section
                                     className={classes("another-route", {})}
@@ -914,8 +932,9 @@ export default function Hub({
                                     </div>
                                   </div>
                                   <section className={classes("everyday", {})}>
+                                    {error && <DataState error={error} retry={retry} />}
                                     <h2>{"Everyday links"}</h2>
-                                    <div className={classes("quick-links", {})}>
+                                    <div aria-busy={loading} className={classes("quick-links", {})}>
                                       {quickLinks.map(
                                         ([slug, title, desc], _index8) => (
                                           <Fragment key={_index8}>
@@ -944,7 +963,7 @@ export default function Hub({
                                                         ></Icon>
                                                       </a>
                                                     </>
-                                                  ) : null}
+                                                  ) : loading ? <div className="quick-link-pending"><div><h3>{title}</h3><p>{desc}</p></div><Skeleton width="24px" /></div> : null}
                                                 </>
                                               );
                                             })()}
@@ -958,16 +977,18 @@ export default function Hub({
                                   >
                                     <h2>{"Start here"}</h2>
                                     <div
-                                      className={classes("resource-list", {})}
+                                      aria-busy={loading} className={classes("resource-list", {})}
                                     >
+                                      {loading || error ? <DataState kind="resource" count={4} error={error} retry={retry} /> : <>
                                       {start.map((entry, _index9) => (
-                                        <Fragment key={_index9}>
+                                        <Fragment key={entry.slug}>
                                           <ResourceRow
                                             resource={entry}
                                             home={true}
                                           ></ResourceRow>
                                         </Fragment>
                                       ))}
+                                      </>}
                                     </div>
                                   </section>
                                 </>

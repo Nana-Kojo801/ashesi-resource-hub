@@ -7,7 +7,7 @@ const reasons = [
   "The information is out of date",
   "Something else",
 ];
-export default function FlagButton({ resourceSlug }) {
+export default function FlagButton({ resourceSlug, unavailable = false }) {
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
   const [state, setState] = useState("form");
@@ -33,7 +33,7 @@ export default function FlagButton({ resourceSlug }) {
   }, []);
   async function submit(e) {
     e.preventDefault();
-    if (!reason || state === "sending") return;
+    if (!reason || unavailable || state === "sending") return;
     setState("sending");
     await ready.current;
     if (!client.current) {
@@ -106,7 +106,7 @@ export default function FlagButton({ resourceSlug }) {
         <button
           className="primary-button"
           type="submit"
-          disabled={!reason || state === "sending"}
+          disabled={!reason || unavailable || state === "sending"}
         >
           {state === "sending" ? "Sending…" : "Send report"}
         </button>

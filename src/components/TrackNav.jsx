@@ -1,7 +1,8 @@
 import { Fragment, useState, useMemo, useEffect } from "react";
 import { classes } from "../lib/classes";
 import Icon from "./Icon";
-import { categoryHref, detailHref } from "../lib/presentation";
+import { Skeleton } from "./DataState";
+import { categoryHref } from "../lib/presentation";
 export default function TrackNav({
   categories = [],
   current = "",
@@ -9,6 +10,8 @@ export default function TrackNav({
   report = false,
   resource = null,
   searching = false,
+  resourceSlug = "",
+  loading = false,
 }) {
   return (
     <>
@@ -28,14 +31,14 @@ export default function TrackNav({
         >
           {report ? (
             <>
-              <a href={detailHref(resource)}>
-                {resource.slug === "maintenance-service-request"
+              <a href={`/resource/${resourceSlug}`}>
+                {resource?.slug === "maintenance-service-request"
                   ? "Maintenance request"
-                  : resource.title}
+                  : loading ? <Skeleton width="80%" /> : resource?.title || "Back to resource"}
               </a>
               <a
                 aria-current={"page"}
-                href={`${detailHref(resource)}/report`}
+                href={`/resource/${resourceSlug}/report`}
                 className={classes("selected", {})}
               >
                 {"Report a problem"}
