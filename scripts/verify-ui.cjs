@@ -213,7 +213,6 @@ const types = {
   }
   const correctedUrls = {
     "student-portal-camu-services": "https://www.ashesi.mycamu.com",
-    "academic-requests-via-camu": "https://www.ashesi.mycamu.com",
     "webprint": "https://invence.ashesi.local:9192/app?service=page/UserWebPrint",
     "maintenance-service-request": "https://ashesi-operations.web.app/submit-issue",
     "accessibility-services-meeting-request-form": "https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=9WHGbQzuDka9tANK6z82cJZAadFZhghJpTyyEpn6eRNURUFJTUhKWkUzTzZDOFRaRjJQVlBZTTFWMi4u",
@@ -223,7 +222,7 @@ const types = {
     await page.goto(base + `/resource/${slug}`, { waitUntil: "networkidle" });
     if (await page.locator(".detail-action > a").getAttribute("href") !== url) throw Error(`Incorrect rendered destination: ${slug}`);
   }
-  for (const slug of ["accessibility-and-accommodation-request", "natembea-health-center", "job-shadowing-sign-up", "global-mentorship-initiative"]) {
+  for (const slug of ["accessibility-and-accommodation-request", "natembea-health-center", "job-shadowing-sign-up", "global-mentorship-initiative", "interruption-of-studies", "academic-requests-via-camu", "academic-request-form", "course-registration-and-issue-reporting", "course-reserves"]) {
     if (directory.some((r) => r.slug === slug) || fs.existsSync(path.join(root, "resource", slug, "index.html"))) throw Error(`Removed resource remains published: ${slug}`);
   }
   await page.goto(base, { waitUntil: "networkidle" });
@@ -252,8 +251,9 @@ const types = {
   });
   await page.getByRole("button", { name: "Forms", exact: true }).click();
   const meta = await page.locator(".resource-meta").allTextContents();
-  if (!meta.length || meta.some((x) => !x.startsWith("Form")))
-    throw Error("Type filter failed");
+  const expectedForms = directory.filter((r) => r.category === "Academic & Administration" && ["Form", "Process"].includes(r.type)).length;
+  if (meta.length !== expectedForms || meta.some((x) => !x.startsWith("Form"))) throw Error("Type filter failed");
+  if (!expectedForms && !(await page.locator(".empty-state").innerText()).includes("No matching resources")) throw Error("Empty form filter not explained");
   await page.locator("#resource-search").fill("zzzxxyynotarealresource");
   if (
     !(await page.locator(".empty-state").innerText()).includes(
@@ -358,11 +358,11 @@ const types = {
         await delayed.screenshot({ path: path.join(out, `loading-${name}-${width}.png`) });
       }
       if (await delayed.locator("#resource-search").count()) {
-        await delayed.locator("#resource-search").fill(name === "people" ? "finance" : name === "category" ? "Academic Request Form" : "my AC is broken");
+        await delayed.locator("#resource-search").fill(name === "people" ? "finance" : name === "category" ? "Student Portal / CAMU Services" : "my AC is broken");
         await delayed.evaluate(() => { window.__searchInput = document.querySelector("#resource-search"); });
       }
       if (name === "category") {
-        await delayed.getByRole("button", { name: "Forms", exact: true }).click();
+        await delayed.getByRole("button", { name: "Portals", exact: true }).click();
       }
       if (name === "report") {
         await delayed.getByLabel("The link is dead", { exact: true }).check();

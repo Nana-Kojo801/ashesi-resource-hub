@@ -27,9 +27,6 @@ export const displayType = (r: Resource) => typeLabels[r.type] || r.type;
 const summaries: Record<string, string> = {
   "student-portal-camu-services": "Academic requests and student services.",
   "academic-calendar": "Key dates for the academic year.",
-  "academic-request-form": "Academic forms and requests.",
-  "course-registration-and-issue-reporting":
-    "Registration support and course issues.",
   "pay-university-fees": "University fee payment resources.",
   "maintenance-service-request": "Report broken rooms, fixtures or equipment.",
   "career-portal-careeros": "Career resources and opportunities.",
@@ -46,8 +43,6 @@ export const starterSlugs = [
 export const academicSlugs = [
   "student-portal-camu-services",
   "academic-calendar",
-  "academic-request-form",
-  "course-registration-and-issue-reporting",
   "pay-university-fees",
 ];
 export function prioritize(resources: Resource[], slugs: string[]) {
