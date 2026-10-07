@@ -45,7 +45,10 @@ pnpm test:ui           # build + browser verification (Node 20+)
 - `src/styles/hub.css`: approved typography, palette, layout and mobile rules.
 - `src/lib/presentation.ts`: directory summaries, resource ordering and contact extraction.
 - `src/content/resources/*.yaml`: the unchanged content database.
-- `scripts/build-data.mjs`: generated resource data, sitemap and robots.txt.
+- `scripts/build-data.mjs`: generated resource data, canonical sitemap and robots.txt.
+- `src/lib/seo.js` and `scripts/build-seo.mjs`: shared route metadata, structured data and static HTML heads for crawlers/link previews.
+- `src/components/AppChrome.jsx`: persistent header and mobile navigation.
+- `public/hub-mark.svg`: the app mark; PNG icons and the social card are checked in.
 - `scripts/verify-ui.cjs`: browser screenshots and interaction/viewport checks.
 - `convex/`: unchanged report schema, mutations and Telegram bot.
 
@@ -132,7 +135,7 @@ Use the same `TELEGRAM_WEBHOOK_SECRET` value here as the one set in the Convex d
 
 ### Netlify
 
-This project builds to a plain static site (a Vite SPA bundle — HTML shell + JS/CSS + generated `data/resources.json`, no server needed) — Netlify serves that directly.
+This project builds to a Vite SPA with static route-specific HTML heads, JS/CSS and generated `data/resources.json`. Netlify serves the files directly; no server runtime is required. Internal navigation stays client-side.
 
 - **Build command:** `pnpm build`
 - **Publish directory:** `dist`
@@ -140,7 +143,7 @@ This project builds to a plain static site (a Vite SPA bundle — HTML shell + J
 - The production deployment uses the `main` branch.
 - Set `VITE_CONVEX_URL` as a Netlify environment variable (**Site configuration → Environment variables**), pointing at your production Convex deployment's `.convex.cloud` URL.
 
-> A single-page app needs an SPA fallback so deep links like `/resource/some-slug` don't 404 on a hard refresh — `public/_redirects` (`/* /index.html 200`) handles that; it's copied into `dist/` on every build.
+> Known routes have generated HTML files with their own metadata. The non-forced fallback does not override them. A single-page app still needs an SPA fallback so deep links like `/resource/some-slug` don't 404 on a hard refresh — `public/_redirects` (`/* /index.html 200`) handles that; it's copied into `dist/` on every build.
 
 ## Decisions made while building this (spec left them ambiguous)
 
@@ -153,7 +156,7 @@ This project builds to a plain static site (a Vite SPA bundle — HTML shell + J
 6. **React Router.** Internal resource links and category selection navigate client-side without reloading the document. `/contacts` remains supported alongside the People category route.
 7. **Cached resource data.** The YAML-generated JSON is fetched once per page load and shared between routes.
 8. **Self-hosted typography.** Roboto weights 400, 500 and 700 are bundled from Fontsource; CSS hover transitions respect reduced-motion preferences.
-9. **Static hosting.** Vite outputs a static app shell and assets. The existing Netlify SPA fallback serves deep links and report routes.
+9. **Static hosting and SEO.** Vite outputs the SPA bundle, then a post-build script creates HTML heads with unique titles/descriptions, canonical URLs, Open Graph/Twitter previews, JSON-LD and a useful no-JavaScript directory. Browser metadata updates during navigation. Search, report and missing-resource views use `noindex`; the sitemap lists canonical indexable pages. Metadata does not claim the university publishes this student-built app.
 10. **Resource "Verified" date.** Shown on the resource detail page as a fixed `2026-09-19`, matching the inventory document's stated research/verification date, since no per-resource `last_verified_at` field was added to the schema (the spec's schema block didn't include one; adding one is a natural follow-up if per-resource verification dates need to be tracked going forward).
 
 ## Explicitly out of scope

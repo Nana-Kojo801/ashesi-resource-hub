@@ -44,6 +44,7 @@ const types = {
   ".json": "application/json",
   ".woff2": "font/woff2",
   ".svg": "image/svg+xml",
+  ".png": "image/png",
 };
 (async () => {
   const server = http.createServer((req, res) => {
@@ -126,6 +127,18 @@ const types = {
   await page.goto(base, { waitUntil: "networkidle" });
   await page.evaluate(() => {
     window.__spaMarker = "loaded";
+    window.__navElement = document.querySelector(".mobile-nav");
+    window.__headerElement = document.querySelector(".site-header");
+    window.__navTop = window.__navElement.getBoundingClientRect().top;
+    window.__navMoved = false;
+    window.__transitionCalls = 0;
+    const startTransition = document.startViewTransition?.bind(document);
+    if (startTransition) document.startViewTransition = (...args) => { window.__transitionCalls++; return startTransition(...args); };
+    window.__checkNav = () => {
+      if (window.__navElement !== document.querySelector(".mobile-nav") || Math.abs(window.__navElement.getBoundingClientRect().top - window.__navTop) > 0.5) window.__navMoved = true;
+      window.__navFrame = requestAnimationFrame(window.__checkNav);
+    };
+    window.__navFrame = requestAnimationFrame(window.__checkNav);
     window.__skeletonFlash = false;
     new MutationObserver(() => {
       if (document.querySelector(".skeleton")) window.__skeletonFlash = true;
@@ -174,6 +187,8 @@ const types = {
     () =>
       document.querySelector("h1")?.textContent === "Where do you need to go?",
   );
+  if (await page.evaluate(() => window.__navMoved || window.__transitionCalls || window.__headerElement !== document.querySelector(".site-header"))) throw Error("Mobile chrome moved or remounted during navigation");
+  await page.evaluate(() => cancelAnimationFrame(window.__navFrame));
   if (await page.evaluate(() => window.__skeletonFlash)) throw Error("Cached navigation flashed skeletons");
   if (repeatedResourceFetches !== 0)
     throw Error("Navigation fetched resource data again");
@@ -181,9 +196,9 @@ const types = {
   await page.goto(base + "/category/offices-and-people/", {
     waitUntil: "networkidle",
   });
-  await page.getByRole("button", { name: "View all offices" }).click();
-  if ((await page.locator(".contact-row").count()) <= 3)
-    throw Error("Additional offices inaccessible");
+  const expectedContacts = JSON.parse(fs.readFileSync(path.join(root, "data/resources.json"), "utf8")).filter((r) => r.category === "Offices & People").length;
+  if ((await page.locator(".contact-row").count()) !== expectedContacts || await page.getByRole("button", { name: "View all offices" }).count())
+    throw Error("People directory did not show all contacts immediately");
   await page.goto(base + "/category/academic-and-administration/", {
     waitUntil: "networkidle",
   });
@@ -266,6 +281,33 @@ const types = {
       });
     }
   }
+  // Crawlers/share services receive route metadata before executing JavaScript.
+  const seoRoutes = [
+    ["/", "Ashesi links, forms &amp; contacts", "/", false],
+    ["/category/offices-and-people", "Office contacts &amp; people", "/category/offices-and-people", false],
+    ["/contacts", "Office contacts &amp; people", "/category/offices-and-people", false],
+    ["/resource/maintenance-service-request", "Maintenance Service Request", "/resource/maintenance-service-request", false],
+    ["/resource/maintenance-service-request/report", "Report a problem", "/resource/maintenance-service-request/report", true],
+    ["/search", "Search Ashesi resources", "/search", true],
+  ];
+  for (const [route, title, canonical, noindex] of seoRoutes) {
+    const response = await page.request.get(base + route);
+    const html = await response.text();
+    if (!html.includes(`<title>${title}`) || !html.includes(`rel="canonical" href="https://ashesiresourcehub.netlify.app${canonical}"`) || !html.includes(`name="robots" content="${noindex ? "noindex" : "index"}, follow"`) || !html.includes('property="og:image" content="https://ashesiresourcehub.netlify.app/social-card.png"')) throw Error(`Static route SEO missing: ${route}`);
+    const structured = JSON.parse(html.match(/<script id="hub-structured-data" type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+    if (structured["@graph"].some((item) => item.publisher?.name === "Ashesi University")) throw Error("SEO falsely claims university ownership");
+  }
+  const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
+  if (sitemap.includes("/report</loc>") || sitemap.includes("/search</loc>") || sitemap.includes("/contacts</loc>")) throw Error("Non-canonical/noindex views in sitemap");
+  await page.goto(base, { waitUntil: "networkidle" });
+  await page.locator(".resource-row h3 a").first().click();
+  await page.waitForSelector(".detail-record");
+  const detailCanonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+  if (!detailCanonical.endsWith(new URL(page.url()).pathname) || !(await page.locator('meta[property="og:title"]').getAttribute("content")).includes(await page.locator("h1").innerText())) throw Error("SEO stale after client navigation");
+  await page.goto(base + "/resource/does-not-exist", { waitUntil: "networkidle" });
+  if (await page.locator('meta[name="robots"]').getAttribute("content") !== "noindex, follow") throw Error("Missing resource remains indexable");
+  await page.locator(".page-content a").click();
+  await page.waitForFunction(() => document.querySelector('meta[name="robots"]').content === "index, follow");
   // Hold the actual data request open: only fetched regions may be skeletons.
   const data = fs.readFileSync(path.join(root, "data/resources.json"), "utf8");
   for (const width of [334, 1140]) {
@@ -365,7 +407,7 @@ const types = {
         checks,
         errors,
         functional:
-          "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations, localized delayed loading on seven routes at two widths, preserved search/filter/report state, in-place retry and reduced motion passed",
+          "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations, localized delayed loading on seven routes at two widths, preserved search/filter/report state, in-place retry, reduced motion, stationary persistent mobile chrome, full People directory and static/client route SEO passed",
       },
       null,
       2,

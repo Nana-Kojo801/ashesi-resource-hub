@@ -1,7 +1,9 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams, useMatches } from "react-router-dom";
 import Hub from "../components/Hub";
+import { AppHeader, BottomNav } from "../components/AppChrome";
 import { useResources } from "../lib/useResources";
+import { applySeo, pageSeo } from "../lib/seo";
 import { CATEGORY_ORDER, slugifyCategory } from "../lib/categories";
 
 type Mode =
@@ -16,11 +18,17 @@ type Mode =
 
 // Preserve main's React Router and cached resource loading. Reuse the approved
 // React view with the approved markup and shared design tokens.
-export function HubPage({ mode }: { mode: Mode }) {
+export function HubPage() {
+  const matches = useMatches();
+  const mode = (matches[matches.length - 1].handle as { mode: Mode })?.mode || "missing";
   const { resources, loading, error, retry } = useResources();
   const { slug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchState, setSearchState] = useState({ key: location.key, active: !!new URLSearchParams(location.search).get("q") });
+  const searching = mode === "search" || (mode === "home" &&
+    (searchState.key === location.key ? searchState.active : !!new URLSearchParams(location.search).get("q")));
+
   const category =
     resources?.find((r) => slugifyCategory(r.category) === slug)?.category ||
     ((loading || error) ? CATEGORY_ORDER.find((name) => slugifyCategory(name) === slug) : "") || "";
@@ -35,26 +43,14 @@ export function HubPage({ mode }: { mode: Mode }) {
       ((mode === "detail" || mode === "report") && !resource));
 
   useEffect(() => {
-    const title =
-      resource?.title ||
-      (resolvedMode === "people"
-        ? "People"
-        : resolvedMode === "emergency"
-          ? "Urgent help"
-          : resolvedMode === "search"
-            ? "Search resources"
-            : resolvedMode === "category"
-              ? category
-              : "Resources");
-    document.title = `${title} · Ashesi Resource Hub`;
-    document
-      .querySelector('meta[name="description"]')
-      ?.setAttribute(
-        "content",
-        resource?.description ||
-          "Find Ashesi links, forms and the people who can help. No account needed.",
-      );
-  }, [resource, category, resolvedMode]);
+    if (loading && (mode === "detail" || mode === "report")) return;
+    const seo = pageSeo({
+      mode: missing ? "missing" : searching ? "search" : resolvedMode,
+      category, resource, resources: resources || [], path: location.pathname,
+    });
+    if (error) seo.robots = "noindex, follow";
+    applySeo(seo);
+  }, [resource, resources, category, resolvedMode, missing, searching, mode, loading, error, location.pathname]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -94,12 +90,15 @@ export function HubPage({ mode }: { mode: Mode }) {
 
   function navigateSmoothly(href: string) {
     navigate(href, {
-      viewTransition: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+      // Mobile animates only content, keeping fixed navigation outside snapshots.
+      viewTransition: window.matchMedia("(min-width: 761px)").matches &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     });
   }
 
   return (
     <div onClick={followInternalLink}>
+      <AppHeader mode={mode} people={resolvedMode === "people"} />
       <Hub
         key={location.key}
         mode={missing ? "missing" : resolvedMode}
@@ -111,7 +110,9 @@ export function HubPage({ mode }: { mode: Mode }) {
         error={error}
         retry={retry}
         resourceSlug={slug || ""}
+        onSearchChange={(active) => setSearchState({ key: location.key, active })}
       />
+      <BottomNav mode={mode} people={resolvedMode === "people"} searching={searching} />
     </div>
   );
 }

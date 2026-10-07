@@ -1,3 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <path d="M7 12h18M7 17h12M7 22h15" stroke="#000" stroke-width="2.6" stroke-linecap="square"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 68">
+  <title>Ashesi Resource Hub</title>
+  <path d="M8 24 32 8l24 16" fill="none" stroke="#000000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="26" r="4.5" fill="#000000"/>
+  <g fill="none" stroke="#000000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 35c9 0 15 3 20 8 5-5 11-8 20-8v19c-9 0-15 2-20 7-5-5-11-7-20-7Z"/>
+    <path d="M32 43v18M21 40v13M43 40v13"/>
+  </g>
 </svg>

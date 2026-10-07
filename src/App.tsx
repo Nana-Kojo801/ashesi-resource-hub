@@ -1,16 +1,20 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { HubPage } from "./routes/HubPage";
 
-const router = createBrowserRouter([
-  { path: "/", element: <HubPage mode="home" /> },
-  { path: "/search", element: <HubPage mode="search" /> },
-  { path: "/category/:slug", element: <HubPage mode="category" /> },
-  { path: "/resource/:slug/report", element: <HubPage mode="report" /> },
-  { path: "/resource/:slug", element: <HubPage mode="detail" /> },
-  { path: "/emergency", element: <HubPage mode="emergency" /> },
-  { path: "/contacts", element: <HubPage mode="people" /> },
-  { path: "*", element: <HubPage mode="missing" /> },
-]);
+// A shared parent keeps app chrome alive; only the page view remounts.
+const router = createBrowserRouter([{
+  element: <HubPage />,
+  children: [
+    { path: "/", handle: { mode: "home" } },
+    { path: "/search", handle: { mode: "search" } },
+    { path: "/category/:slug", handle: { mode: "category" } },
+    { path: "/resource/:slug/report", handle: { mode: "report" } },
+    { path: "/resource/:slug", handle: { mode: "detail" } },
+    { path: "/emergency", handle: { mode: "emergency" } },
+    { path: "/contacts", handle: { mode: "people" } },
+    { path: "*", handle: { mode: "missing" } },
+  ],
+}]);
 
 export function App() {
   return <RouterProvider router={router} />;

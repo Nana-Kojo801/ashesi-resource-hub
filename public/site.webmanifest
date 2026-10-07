@@ -1,12 +1,29 @@
 {
   "name": "Ashesi Resource Hub",
   "short_name": "Resource Hub",
-  "description": "Every official Ashesi link, on one board.",
+  "description": "Ashesi links, forms, office contacts and emergency numbers.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F6EFE0",
-  "theme_color": "#A93C40",
+  "background_color": "#fffcfc",
+  "theme_color": "#8b2332",
   "icons": [
-    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    {
+      "src": "/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }

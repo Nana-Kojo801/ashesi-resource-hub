@@ -7,7 +7,7 @@
     "predev": "node scripts/build-data.mjs",
     "dev": "vite",
     "prebuild": "node scripts/build-data.mjs",
-    "build": "vite build",
+    "build": "vite build && node scripts/build-seo.mjs",
     "preview": "vite preview",
     "test:ui": "node scripts/verify-ui.cjs"
   },

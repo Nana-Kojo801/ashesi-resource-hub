@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#fffcfc"/><rect x="825" width="375" height="630" fill="#f3e6e9"/>
+<path d="M64 100h1090" stroke="#e7cfd4" stroke-width="2"/><rect x="64" y="90" width="20" height="20" fill="#d5a348"/>
+<g font-family="Arial, sans-serif" fill="#4d1723"><text x="72" y="248" font-size="90" font-weight="700">Ashesi</text><text x="72" y="354" font-size="84" font-weight="700">Resource Hub</text><text x="76" y="440" font-size="32" fill="#73666a">Find a link, a form, or someone who can help.</text><text x="76" y="555" font-size="26" fill="#8b2332">LINKS  ·  FORMS  ·  PEOPLE</text></g>
+<svg x="890" y="205" width="240" height="255" viewBox="0 0 64 68"><path d="M8 24 32 8l24 16" fill="none" stroke="#8b2332" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="26" r="4.5" fill="#d5a348"/>
+  <g fill="none" stroke="#8b2332" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 35c9 0 15 3 20 8 5-5 11-8 20-8v19c-9 0-15 2-20 7-5-5-11-7-20-7Z"/>
+    <path d="M32 43v18M21 40v13M43 40v13"/>
+  </g>
+</svg></svg>

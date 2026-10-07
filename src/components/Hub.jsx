@@ -19,7 +19,7 @@ import {
   prioritize,
   starterSlugs,
 } from "../lib/presentation";
-/** @param {{mode?: string, resources?: import("../lib/types").Resource[], category?: string, resource?: import("../lib/types").Resource | null, navigate: (href: string) => void, loading?: boolean, error?: Error | null, retry?: () => void, resourceSlug?: string}} props */
+/** @param {{mode?: string, resources?: import("../lib/types").Resource[], category?: string, resource?: import("../lib/types").Resource | null, navigate: (href: string) => void, loading?: boolean, error?: Error | null, retry?: () => void, resourceSlug?: string, onSearchChange?: (searching: boolean) => void}} props */
 export default function Hub({
   mode = "home",
   resources = [],
@@ -30,6 +30,7 @@ export default function Hub({
   error = null,
   retry,
   resourceSlug = "",
+  onSearchChange,
 }) {
   const [query, setQueryState] = useState(
     () => new URLSearchParams(window.location.search).get("q") || "",
@@ -136,6 +137,7 @@ export default function Hub({
   }
   function setQuery(value) {
     setQueryState(value);
+    onSearchChange?.(value.trim().length > 0);
     setShowAll(false);
     const url = new URL(window.location.href);
     if (value.trim()) url.searchParams.set("q", value);
@@ -143,51 +145,10 @@ export default function Hub({
     history.replaceState(history.state, "", url);
   }
   useEffect(() => {
-    if (mode === "search") document.getElementById("resource-search")?.focus();
+    if (mode === "search" && window.matchMedia("(min-width: 761px)").matches) document.getElementById("resource-search")?.focus();
   }, [mode]);
   return (
     <>
-      <a href={"#main"} className={classes("skip-link", {})}>
-        {"Skip to content"}
-      </a>
-      <header className={classes("site-header", {})}>
-        <a
-          href={"/"}
-          aria-label={"Ashesi Resource Hub home"}
-          className={classes("brand", {})}
-        >
-          <span
-            aria-hidden={"true"}
-            className={classes("brand-mark", {})}
-          ></span>
-          <span>{"Ashesi Resource Hub"}</span>
-        </a>
-        <nav
-          aria-label={"Main navigation"}
-          className={classes("desktop-nav", {})}
-        >
-          <a
-            href={"/"}
-            className={classes("", { active: !people && mode !== "emergency" })}
-          >
-            {"Resources"}
-          </a>
-          <a
-            href={"/category/offices-and-people"}
-            className={classes("", { active: people })}
-          >
-            {"People"}
-          </a>
-        </nav>
-        <a
-          href={"/emergency"}
-          className={classes("emergency-link", {
-            active: mode === "emergency",
-          })}
-        >
-          {"Emergency"}
-        </a>
-      </header>
       <div
         className={classes("app-layout", {
           "full-width": mode === "emergency",
@@ -468,9 +429,7 @@ export default function Hub({
                             aria-busy={loading} className={classes("contact-list", {})}
                           >
                             {loading || error ? <DataState kind="contact" count={3} error={error} retry={retry} /> : <>
-                            {contacts
-                              .slice(0, showAll || query ? undefined : 3)
-                              .map((contact, _index2) => (
+                            {contacts.map((contact, _index2) => (
                                 <Fragment key={contact.slug}>
                                   <ContactRow resource={contact}></ContactRow>
                                 </Fragment>
@@ -488,20 +447,6 @@ export default function Hub({
                             ) : null}
                             </>}
                           </div>
-                          {!showAll && !query && contacts.length > 3 ? (
-                            <>
-                              <button
-                                onClick={() => setShowAll(true)}
-                                className={classes(
-                                  "more-resources directory-continuation",
-                                  {},
-                                )}
-                              >
-                                {"View all offices "}
-                                <Icon name={"arrow"} size={18}></Icon>
-                              </button>
-                            </>
-                          ) : null}
                         </>
                       ) : (
                         <>
@@ -1005,33 +950,6 @@ export default function Hub({
           )}
         </main>
       </div>
-      {mode !== "emergency" && mode !== "report" ? (
-        <>
-          <nav
-            aria-label={"Main navigation"}
-            className={classes("mobile-nav", {})}
-          >
-            <a
-              href={"/"}
-              className={classes("", { active: !people && !searching })}
-            >
-              <Icon name={"resource"} size={23}></Icon>
-              <span>{"Resources"}</span>
-            </a>
-            <a href={"/search"} className={classes("", { active: searching })}>
-              <Icon name={"search"} size={24}></Icon>
-              <span>{"Search"}</span>
-            </a>
-            <a
-              href={"/category/offices-and-people"}
-              className={classes("", { active: people })}
-            >
-              <Icon name={"people"} size={24}></Icon>
-              <span>{"People"}</span>
-            </a>
-          </nav>
-        </>
-      ) : null}
     </>
   );
 }

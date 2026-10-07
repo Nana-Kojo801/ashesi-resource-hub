@@ -226,5 +226,5 @@
     }
   ],
   "errors": [],
-  "functional": "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations, localized delayed loading on seven routes at two widths, preserved search/filter/report state, in-place retry and reduced motion passed"
+  "functional": "SPA navigation without reloads, cached resource data, back navigation, intent search, clear, category filtering, empty states, contact search, report validation/error, emergency destinations, localized delayed loading on seven routes at two widths, preserved search/filter/report state, in-place retry, reduced motion, stationary persistent mobile chrome, full People directory and static/client route SEO passed"
 }
